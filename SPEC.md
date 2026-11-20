@@ -6,20 +6,21 @@ A working web prototype for a take-home exercise about **one moment: a merchant 
 
 Raven is a made-up payments processor. The merchant is Tolu Adeyemi, owner of Tolu Atelier, a clothing brand in Lagos. Her Black Friday sales jumped about 10x, the system flagged it, and her payouts were paused on Fri, 27 Nov 2026 at 3:12pm. It's a false alarm: the sales are real. Salaries and a supplier are due Mon, 30 Nov.
 
-**Main idea: Raven does the review.** By default she has nothing to do. Raven promises a date for the next update (within 24 hrs of the hold), shown in hours, not a date, not a release date. She can add context if she knows of anything that explains it, and she's only asked for documents if Raven actually needs them.
+**Main idea: Raven does the review.** By default she has nothing to do. Raven promises a date for the next update (within 24 hrs of the hold), shown in hours, not a date, not a release date. She can add context if she knows of anything that explains it, (Raven asking for more information is out of scope for this prototype).
 
 The prototype covers:
 1. The hold starts and she finds out (push, SMS, email, in-app banner), all saying the same thing
 2. She opens the details: what's on hold, why, progress, what happens next
 3. Optionally, she tells Raven what happened ("Expected this activity?")
-4. The exception: Raven asks for more information (the only red state)
-5. Raven clears the hold
+4. Raven clears the hold
+
+Out of scope: Raven asking her for more information or documents (an information-required state). Removed from the prototype.
 
 It must feel like a real app on desktop and on her phone, and let the presenter move through each step live.
 
 Design source of truth: Figma file `L50Kr8t31v51771stuErq0` (use the Figma MCP to read nodes). Where Figma and this spec disagree, follow Figma for visuals and this spec for behaviour and copy.
 
-Copy rules: no em dashes anywhere. **Never hint at what the unusual activity was** (no "sales went up", "increase", "spike"): the app only ever says "unusual activity" or "recent activity on your account". Use concrete timings ("within 24 hrs"); updates are promised in hours, never as a date. Live surfaces (banner, timeline) count down to 24 hrs after the hold (day two at 9:30am shows "within 6 hrs"); the alerts always say "within 24 hrs", never "one working day". Dates use the Nigerian format, e.g. "Fri, 27 Nov 2026". Never show an exact payout time. Don't apologise for the hold.
+Copy rules: no em dashes anywhere. **Never hint at what the unusual activity was** (no "sales went up", "increase", "spike"): the app only ever says "unusual activity" or "recent activity on your account". Use concrete timings ("within 24 hrs"); updates are promised in hours, never as a date. Live surfaces (banner, timeline) count down to 24 hrs after the hold (day two at 9:30am shows "within 6 hrs"), never above 24 hrs and only once a hold is placed; the alerts always say "within 24 hrs", never "one working day". Dates use the Nigerian format, e.g. "Fri, 27 Nov 2026". Never show an exact payout time. Don't apologise for the hold.
 
 ---
 
@@ -157,7 +158,7 @@ Build each once and reuse. Names match Figma.
 | PayoutsTable | shadcn `table` from 768px up (Recipient hidden below 1024px), a list below it. No row menu: an On hold row opens the drawer on click. Hovering a Reference cell (Paid rows) reveals a small round copy button at its right edge (also shown on keyboard focus, and always on touch screens); copying shows "Reference copied" and the icon briefly turns into a check. Proportional columns, all left-aligned |
 | Review drawer | shadcn `sheet`: right side, 480px from 768px up, full-screen sheet below. Sticky header (title, close), scrolling body, sticky footer. Overlay `--overlay` with a slight blur |
 | ReviewTimeline | custom vertical timeline with connected markers |
-| Context form, reply form, file upload | `textarea`, `label`, native radios in a `fieldset`; shared drop zone and file rows |
+| Context form, file upload | `textarea`, `label`, native radios in a `fieldset`; shared drop zone and file rows |
 | Sidebar | custom: 240px from 1280px, icon rail 768 to 1279px, hidden below 768px behind a header menu button (left sheet) |
 | Header | custom: menu button (mobile), "Find anything..." search (768px up), theme switcher, bell with unread dot (blue), avatar |
 | Alerts preview | shadcn `dialog`, full screen on mobile |
@@ -189,13 +190,13 @@ What a hold does: payouts stop and her payout balance keeps growing. Nothing lea
 At the time of the hold:
 - Thu, 26 Nov sales (₦339,825.00) were paid out Fri morning. Paid, not affected.
 - Fri, 27 Nov sales (₦3,457,350.00 so far) were due to pay out Mon, 30 Nov. That payout is On hold.
-- Sat and Sun sales would each have paid out Mon, 30 Nov as their own payouts. While the hold is on, each becomes another On hold payout and joins the balance.
+- Each day's sales are their own payout, made on the next working day. Payouts are never combined, and there is no payout for the current day: on Sat, 28 Nov only Friday's payout exists (Saturday's sales become a payout once the day is over). Friday's payout stays ₦3,457,350.00.
 
 Sales figures (one source, `salesFor(day, now)` in `lib/proto.ts`, used by Payouts and the Home chart):
 
 | Sales day | So far (that day) | Final |
 |---|---|---|
-| Fri, 27 Nov | ₦3,457,350.00 | ₦4,012,875.00 |
+| Fri, 27 Nov | ₦3,457,350.00 | ₦3,457,350.00 (fixed) |
 | Sat, 28 Nov | ₦586,500.00 | ₦3,120,000.00 |
 | Thu 26 to Fri 20 Nov | | ₦339,825.00, ₦369,375.00, ₦325,050.00, ₦354,600.00, ₦221,625.00, ₦369,375.00, ₦443,250.00 |
 
@@ -203,8 +204,7 @@ Payouts table (newest first): **one row per sales day**. Columns: Payout for (th
 
 | Payout for | Amount | Status | Reference |
 |---|---|---|---|
-| Sat, 28 Nov 2026 (from the next day only; sales so far) | ₦586,500.00 | On hold while held, otherwise Pending | - |
-| Fri, 27 Nov 2026 | ₦3,457,350.00 so far on the day; ₦4,012,875.00 from the next day | On hold while held, otherwise Pending | - |
+| Fri, 27 Nov 2026 | ₦3,457,350.00 (unchanged after Next day) | On hold while held, otherwise Pending | - |
 | Thu, 26 Nov 2026 | ₦339,825.00 | Paid | PO-261127-0487 |
 | Wed, 25 Nov 2026 | ₦369,375.00 | Paid | PO-261126-0451 |
 | Tue, 24 Nov 2026 | ₦325,050.00 | Paid | PO-261125-0419 |
@@ -228,8 +228,6 @@ One Zustand store (`lib/store.ts`), persisted to `localStorage`. Banner, cards, 
 type HoldState =
   | 'none'          // before the hold
   | 'paused'        // under review: Raven is doing the work, no action needed
-  | 'info-needed'   // exception: Raven asked for more information (red)
-  | 'reviewing'     // she sent the requested details; under review again
   | 'resumed';      // hold cleared
 
 interface ProtoState {
@@ -237,9 +235,8 @@ interface ProtoState {
   hold: HoldState;
   drawerOpen: boolean;
   drawerView: 'summary' | 'support';
-  form: { choice; note; link; files };   // shared by the context form and the reply form
+  form: { choice; note; files };   // the context form
   context: ContextNote | null;    // what she volunteered ("Expected this activity?")
-  submission: Submission | null;  // her reply to an information request
   notifications; emails; theme;
   simulateUploadError: boolean;
   simulateSendError: boolean;
@@ -254,7 +251,7 @@ Sending context does **not** change `hold`, the banner, the cards or the update 
 
 Colour follows the payout status, and the banner matches it:
 
-- **Red: On hold.** The On hold pill, and the banner while payouts are on hold (always filled solid red, never a tint; the "Provide details" link marks when she needs to act). Failed uploads and sends also use the danger colours.
+- **Red: On hold.** The On hold pill, and the banner while payouts are on hold (always filled solid red, never a tint). Failed uploads and sends also use the danger colours.
 - **Yellow: Pending.** The Pending pill on a payout that is due and not on hold (replaces "Scheduled").
 - **Green:** Paid, and the resumed banner.
 - Blue is only used for the current step on the review timeline.
@@ -268,9 +265,9 @@ Payouts page: title "Payouts", the Next payout card (full width), toolbar ("Last
 One summary card, **Next payout** (it replaces the separate Payout balance and Next payout cards):
 
 - Title: "Next payout"
-- Value: the amount of the next payout, i.e. the payout balance (e.g. ₦3,457,350.00; ₦4,599,375.00 from the next day)
+- Value: the amount of the next payout, i.e. the payout balance (e.g. ₦3,457,350.00, unchanged after Next day)
 - Under the value, a plain secondary sentence (no colour, not a badge), counting the payouts:
-  - On hold: "You have 1 payout on hold" (from the next day: "You have 2 payouts on hold")
+  - On hold: "You have 1 payout on hold" (still 1 after Next day; it counts past sales days only)
   - No hold: "You have 1 pending payout, due Mon, 30 Nov 2026" (the due date only when not on hold)
   - Nothing due: "You have no pending payouts"
 
@@ -286,8 +283,6 @@ One component on Home and Payouts, under the header. The header and banner are p
 |---|---|---|---|
 | paused, day one | solid red | Payouts paused while we review recent activity on your account. No action needed. We'll update you within 24 hrs. | View details |
 | paused, from the next day | solid red | Payouts paused since Fri, 27 Nov 2026. We're still reviewing. We'll update you within 6 hrs. | View details |
-| info-needed | solid red | We need more information to finish our review. | Provide details |
-| reviewing (after her reply) | solid red | Details received. We'll update you within 24 hrs. | View details |
 | resumed | solid green | Payouts resumed. Your next payout goes out on Mon, 30 Nov 2026. | Dismiss (x) |
 
 Every link opens the review drawer.
@@ -299,17 +294,15 @@ Every link opens the review drawer.
 Order, top to bottom:
 
 1. **Title**: "Payouts paused". The account activity is under review, never the payouts: copy never says "payouts under review" or "paused for review".
-2. **Money**: "₦3,457,350.00 on hold" (the payout balance). Below: the count and the first to last day, which reads the same however long the hold lasts: "1 payout, for Fri, 27 Nov"; from the next day "2 payouts, for Fri, 27 Nov to Sat, 28 Nov"; after five days it would be "5 payouts, for Fri, 27 Nov to Tue, 1 Dec". No due date: a held payout isn't due until the review ends. Below that, the only "what happens next" line: "You can keep accepting payments as usual, and new sales are paid out after the review."
+2. **Money**: "₦3,457,350.00 on hold" (the payout balance). Below: the count and the first to last day, which reads the same however long the hold lasts: "1 payout, for Fri, 27 Nov"; after Next day it is still "1 payout, for Fri, 27 Nov" (no payout for the current day); after five days it would be "5 payouts, for Fri, 27 Nov to Tue, 1 Dec". No due date: a held payout isn't due until the review ends. Below that, the only "what happens next" line: "You can keep accepting payments as usual, and new sales are paid out after the review."
 3. **Details**: Paused since "Fri, 27 Nov 2026, 3:12pm" (the hold time, not a payout time). Reason "Unusual activity on your account". Reference "HLD-261127-0412".
 4. **Progress timeline** (vertical, connected markers; the connector is solid up to the current step and dotted after it, with clearly spaced dots):
    - Payouts paused: Fri, 27 Nov, 3:12pm (done: filled marker with a check)
    - You added context: time (done; only after she sends context)
-   - You sent details: time (done; only after an information reply)
    - Reviewing account activity: "We're checking recent activity on your account" (current: blue ring with a dot and a soft one-way ripple every 2.4s, transform and opacity only, none with reduced motion)
    - Next update: Within 24 hrs (upcoming: empty marker). Never "Decision".
-5. **What you sent** (read-only; only after an information reply)
-6. **Expected this activity?** (see below)
-7. **Footer**: "Contact support" (ghost) left, "Close" (outline) right. Contact support is a `mailto:` link that opens her email app with the recipient (support@raven.ng), subject "Paused payouts (HLD-261127-0412)" and a short body including the reference pre-filled. It doesn't open anything inside the app. The email's "Contact support" link does the same.
+5. **Expected this activity?** (see below)
+6. **Footer**: "Contact support" (ghost) left, "Close" (outline) right. Contact support is a `mailto:` link that opens her email app with the recipient (support@raven.ng), subject "Paused payouts (HLD-261127-0412)" and a short body including the reference pre-filled. It doesn't open anything inside the app. The email's "Contact support" link does the same.
 
 Keyboard: the drawer traps focus, Esc closes it, focus returns to whatever opened it (banner link, card, row).
 
@@ -318,22 +311,13 @@ Keyboard: the drawer traps focus, Esc closes it, focus returns to whatever opene
 How she says "this hold is a mistake" without disputing it. Optional. It doesn't change her status, doesn't turn anything red and doesn't promise a faster release.
 
 - Heading "Expected this activity?". Body "If something recent explains the activity on your account, you can tell us." Button "Tell us what happened" (outline).
-- The button expands an inline form in the drawer (focus moves to the first option):
+- The button opens the form as a modal on top of the drawer (focus moves to the first option; Esc, Cancel or X closes it and returns focus to the button):
   - Required radio group "What might explain it?": A promotion or campaign, A new product or service, A change to how I sell, Something else
   - Optional textarea "Anything else we should know?"
   - Optional "Attachments" upload (same upload component and states as everywhere). No link field
   - Cancel, "Submit" (disabled until a reason is picked)
-- After sending: toast "Sent. We've added this to your review."; the section becomes a read-only summary "You told us: A promotion or campaign" with the time sent, the note and any attachments; the timeline gets "You added context". Banner, cards and update date stay the same.
+- After Submit: the modal closes, toast "Sent. We've added this to your review."; in the drawer the section becomes a read-only summary "You told us: A promotion or campaign" with the time sent, the note and any attachments; the timeline gets "You added context". Banner, cards and update date stay the same.
 - "Simulate submit failure": keep what she typed and show "Couldn't send. Try again."
-
-### More information needed (exception, red)
-
-- Banner turns solid red (see Banner). The Next payout card stays "On hold".
-- Drawer title "We need a little more information". No sub-headings, two short paragraphs: "Your payouts are still on hold while we review recent activity on your account. Please provide the information below." and "You'll receive an update within 24 hrs of receiving your response."
-  - Then the reply form directly (no "Your reply" heading): textarea labelled "What's changed in your business recently?" (required), placeholder "For example, a promotion, a new product or a change in how you sell" (no hint text under the label), then the "Attachments" upload. If she already sent context, the reply starts pre-filled with it (no note).
-  - Footer: Contact support, Cancel, Submit.
-- States: uploading with progress, upload failed with Retry, file rejected (type / over 10MB), sending (spinner, fields locked), send failed ("Couldn't send. Try again.", text kept).
-- After sending: toast and banner "Details received. We'll update you within 24 hrs." (solid red: still on hold, nothing to do). The drawer shows what she sent, read-only.
 
 ### Hold lifted
 
@@ -346,11 +330,10 @@ Drawer title "Hold lifted": the balance, "Payout pending", hold lifted date, nex
 Same message as the day-one banner. **No amount, nothing sensitive**: lock screens show them.
 
 - **Push**: title "Payouts paused", body "We're reviewing recent activity on your account. No action needed. We'll update you within 24 hrs."
-- **SMS**: "Raven: Your payouts are paused while we review recent activity on your account. No action needed. We'll update you within 24 hrs. Details: raven.ng/h/HLD-261127-0412"
+- **SMS** (147 characters, fits one 160-character SMS): "Raven: Payouts paused while we review recent activity on your account. No action needed. We'll update you within 24 hrs. raven.ng/h/HLD-261127-0412"
 - **Email**: subject "Your payouts are paused". Body says the same thing, plus the reference and a "View details" button. Black text on white, one black button.
 - Tapping any of them opens `/payouts?hold=open`: banner visible, drawer open.
 
-When Raven asks for more information, a push and email "More information needed" also link to `/payouts?hold=open`. When the hold is lifted, a "Payouts resumed" notification.
 
 ### Alerts preview
 
@@ -374,9 +357,8 @@ When Raven asks for more information, a push and email "More information needed"
 A small floating panel, hidden by default, toggled with `Shift + D` (ignored while typing). Not part of the product.
 
 - **Place hold**: now = Fri, 27 Nov 2026, 3:12pm; fires push, email and notification; banner day one
-- **Request information**: the exception (only while under review); banner red
 - **Clear hold**: acts as the reviewer; now = Sat, 28 Nov 2026, 10:05am (or later); hold resumed
-- **Next day**: now = Sat, 28 Nov 2026, 9:30am with the hold still on; day-two banner, balance grows with Saturday's sales
+- **Next day**: now = Sat, 28 Nov 2026, 9:30am with the hold still on; day-two banner. No new payout row (Saturday is the current day), balance stays ₦3,457,350.00
 - **Show alerts**: the alerts preview
 - Theme (system, light, dark), simulate upload failure, simulate submit failure
 - **Reset**: back to none, Fri, 27 Nov 2026, 3:00pm
@@ -386,9 +368,8 @@ Demo script:
 2. Place hold: push, bell dot, solid red banner, Next payout card On hold. Show alerts: push, SMS, email; Open one
 3. Drawer: what's on hold, progress, what happens next. Nothing to do
 4. "Tell us what happened": pick a reason, add a note, send. Timeline updates, nothing else changes
-5. Next day: day-two banner, balance includes Saturday's sales
-6. Optional: Request information (solid red), reply pre-filled from the context, Submit, banner back to "Details received"
-7. Clear hold: green banner, the held payouts go back to Pending
+5. Next day: day-two banner; still one payout on hold (no payout for the current day)
+6. Clear hold: green banner, the held payouts go back to Pending
 
 ---
 
@@ -405,6 +386,7 @@ Demo script:
 
 ## Out of scope
 
+- Raven asking for more information or documents (information-required state)
 - Anything after the first review: reminders, holds that stay, a "continue restriction" outcome, several days on hold
 - Failed payouts
 - Other hold reasons (refunds, missing documents, bank change)

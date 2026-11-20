@@ -6,7 +6,7 @@ import { ALERT, HOLD_HREF, HOLD_REF, SUPPORT_MAILTO, UPDATE_WITHIN_HRS } from "@
  * The anchor carries data-internal so the inbox can route it client-side
  * without losing prototype state.
  */
-export type HoldEmailKind = "hold-paused" | "info-needed"
+export type HoldEmailKind = "hold-paused"
 
 const COPY: Record<
   HoldEmailKind,
@@ -20,16 +20,6 @@ const COPY: Record<
       `No action needed. We'll update you within ${UPDATE_WITHIN_HRS} hrs.`,
     ],
     cta: "View details",
-    href: HOLD_HREF,
-  },
-  // The exception: Raven needs something from her.
-  "info-needed": {
-    heading: "We need more information to finish our review",
-    paragraphs: [
-      "Tell us about the recent activity on your account, and add anything that supports it.",
-      "Your payouts stay paused until we finish. Customers can still pay you.",
-    ],
-    cta: "Provide details",
     href: HOLD_HREF,
   },
 }

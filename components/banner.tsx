@@ -17,7 +17,6 @@ interface BannerProps {
  * Colour follows the payout status: On hold is red.
  * Always filled (solid), never a tint:
  *  - hold    solid red: payouts on hold, Raven is reviewing, nothing to do. "View details".
- *  - action  solid red: on hold and she needs to act (information required). "Provide details".
  *  - success solid green: payouts resumed (dismissible).
  *
  * Text wraps on narrow screens and the link always stays visible.
@@ -40,7 +39,7 @@ export function Banner({ banner, onAction }: BannerProps) {
             data-tone={tone}
             className={cn(
               "flex items-start gap-2 py-2.5 pr-4 pl-4 text-body-medium md:items-center md:pl-6",
-              (tone === "hold" || tone === "action") && "bg-hold-strong text-hold-on-strong",
+              tone === "hold" && "bg-hold-strong text-hold-on-strong",
               tone === "success" && "bg-success-strong text-hold-on-strong"
             )}
           >

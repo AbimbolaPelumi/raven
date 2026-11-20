@@ -16,11 +16,9 @@
 /**
  * none        before any hold
  * paused      under review, Raven is doing the work, no action needed
- * info-needed exception: Raven asked for more information (the only red state)
- * reviewing   she sent the requested details; under review again
  * resumed     hold cleared
  */
-export type HoldState = "none" | "paused" | "info-needed" | "reviewing" | "resumed"
+export type HoldState = "none" | "paused" | "resumed"
 export type PayoutStatus = "paid" | "on-hold" | "pending"
 
 export interface UploadFile {
@@ -57,13 +55,6 @@ export interface Email {
   preview: string
   at: string
   read: boolean
-}
-
-/** Reply to an information request. */
-export interface Submission {
-  reason: string
-  files: UploadFile[]
-  at: string
 }
 
 /** "Expected this activity?": optional context she volunteers. */
@@ -181,7 +172,10 @@ function toMs(iso: string) {
 
 /** "within 24 hrs", counting down to the promised update; never below 1 hr. */
 export function updateWithin(now: string) {
-  const hrs = Math.max(1, Math.ceil((toMs(UPDATE_DUE) - toMs(now)) / 3_600_000))
+  // Clamped to 1..24: before the hold starts (e.g. right after Reset) it would
+  // otherwise read "25 hrs". Callers only show it while a hold is on.
+  const raw = Math.ceil((toMs(UPDATE_DUE) - toMs(now)) / 3_600_000)
+  const hrs = Math.min(UPDATE_WITHIN_HRS, Math.max(1, raw))
   return `within ${hrs} ${hrs === 1 ? "hr" : "hrs"}`
 }
 
@@ -206,7 +200,8 @@ export const ALERT = {
   // The account activity is under review, not the payouts: payouts are paused.
   pushTitle: "Payouts paused",
   pushBody: `We're reviewing recent activity on your account. No action needed. We'll update you within ${UPDATE_WITHIN_HRS} hrs.`,
-  sms: `Raven: Your payouts are paused while we review recent activity on your account. No action needed. We'll update you within ${UPDATE_WITHIN_HRS} hrs. Details: raven.ng/h/${HOLD_REF}`,
+  // 147 characters: fits one SMS (160 max).
+  sms: `Raven: Payouts paused while we review recent activity on your account. No action needed. We'll update you within ${UPDATE_WITHIN_HRS} hrs. raven.ng/h/${HOLD_REF}`,
   emailSubject: "Your payouts are paused",
   emailPreview: `No action needed. We'll update you within ${UPDATE_WITHIN_HRS} hrs.`,
 }
@@ -228,7 +223,8 @@ const SALES: Record<string, number> = {
 
 /** Days whose sales are still coming in: [so far today, final once the day ends]. */
 const LIVE_SALES: Record<string, [number, number]> = {
-  "2026-11-27": [HOLD_AMOUNT, 4_012_875],
+  // Friday's payout stays ₦3,457,350.00 after the day ends.
+  "2026-11-27": [HOLD_AMOUNT, HOLD_AMOUNT],
   "2026-11-28": [586_500, 3_120_000],
   "2026-11-29": [412_000, 2_216_250],
 }
@@ -292,11 +288,10 @@ export interface PayoutRow {
 /**
  * Banner colour follows the payout status (On hold is red):
  * hold    solid red: payouts on hold, Raven is reviewing, nothing to do
- * action  solid red: on hold and she needs to act (information required)
  * success solid green: payouts resumed
  */
-export type BannerTone = "hold" | "action" | "success"
-export type BannerAction = "view" | "provide" | "dismiss"
+export type BannerTone = "hold" | "success"
+export type BannerAction = "view" | "dismiss"
 
 export interface BannerModel {
   tone: BannerTone
@@ -328,7 +323,7 @@ export interface ViewModel {
 }
 
 export function isHeld(hold: HoldState) {
-  return hold === "paused" || hold === "info-needed" || hold === "reviewing"
+  return hold === "paused"
 }
 
 export function derive(input: { hold: HoldState; now: string; bannerDismissed: boolean }): ViewModel {
@@ -337,7 +332,12 @@ export function derive(input: { hold: HoldState; now: string; bannerDismissed: b
   const today = dayOf(now)
 
   // Upcoming payouts: one per sales day so far, each due Mon, 30 Nov.
-  const salesDays = UPCOMING_SALES_DAYS.filter((d) => salesFor(d, now) != null)
+  // One payout per past sales day. Today's sales aren't a payout yet (they pay
+  // out next working day), except the hold day itself, whose payout is the one
+  // on hold. So on Sat, 28 Nov there is still only Friday's payout.
+  const salesDays = UPCOMING_SALES_DAYS.filter(
+    (d) => salesFor(d, now) != null && (d < today || d === HOLD_DAY)
+  )
   const balanceAmount = salesDays.reduce((s, d) => s + (salesFor(d, now) ?? 0), 0)
   const upcomingStatus: PayoutStatus = onHold ? "on-hold" : "pending"
 
@@ -395,20 +395,6 @@ export function derive(input: { hold: HoldState; now: string; bannerDismissed: b
       text: dayTwo
         ? `Payouts paused since ${fmtDate(HOLD_DAY)}. We're still reviewing. We'll update you ${updateIn}.`
         : `Payouts paused while we review recent activity on your account. No action needed. We'll update you ${updateIn}.`,
-      action: "view",
-      actionLabel: "View details",
-    }
-  } else if (hold === "info-needed") {
-    banner = {
-      tone: "action",
-      text: "We need more information to finish our review.",
-      action: "provide",
-      actionLabel: "Provide details",
-    }
-  } else if (hold === "reviewing") {
-    banner = {
-      tone: "hold",
-      text: `Details received. We'll update you within ${UPDATE_WITHIN_HRS} hrs.`,
       action: "view",
       actionLabel: "View details",
     }

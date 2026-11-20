@@ -94,15 +94,6 @@ export function DemoControls() {
           Clear hold
         </Button>
       </div>
-      <Button
-        size="sm"
-        variant="outline"
-        className="mt-2 w-full"
-        disabled={s.hold !== "paused"}
-        onClick={s.requestInfo}
-      >
-        Request information
-      </Button>
       <div className="mt-2 grid grid-cols-2 gap-2">
         <Button
           size="sm"

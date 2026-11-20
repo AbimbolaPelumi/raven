@@ -14,7 +14,6 @@ import {
   NEXT_PAYOUT_DAY,
   RESET_NOW,
   addMinutes,
-  UPDATE_WITHIN_HRS,
   fmtDate,
   isHeld,
   type AppNotification,
@@ -22,7 +21,6 @@ import {
   type Email,
   type HoldState,
   type PushNote,
-  type Submission,
   type UploadFile,
 } from "@/lib/proto"
 
@@ -54,7 +52,6 @@ export interface ProtoState {
   simulateUploadError: boolean
   simulateSendError: boolean
 
-  submission: Submission | null
   context: ContextNote | null
   contextOpen: boolean
   resumedAt: string | null
@@ -69,8 +66,6 @@ export interface ProtoState {
   // Demo controls
   placeHold: () => void
   clearHold: () => void
-  /** Processor asks for more information (the exception, red). */
-  requestInfo: () => void
   /** Moves the clock to the next morning with the hold still on. */
   nextDay: () => void
   reset: () => void
@@ -92,8 +87,6 @@ export interface ProtoState {
   retryFile: (id: string) => void
   /** Sends the optional context. Changes nothing about the hold. */
   sendContext: () => void
-  /** Sends the reply to an information request. */
-  send: () => void
   dismissBanner: () => void
   dismissSendError: () => void
   dismissPush: () => void
@@ -101,7 +94,6 @@ export interface ProtoState {
   markEmailRead: (id: string) => void
 }
 
-const INFO_BODY = "We need more information to finish our review."
 const EMPTY_FORM: FormState = { choice: "", note: "", files: [] }
 const ALLOWED = /\.(pdf|jpe?g|png)$/i
 /**
@@ -118,11 +110,6 @@ export function takeOpener() {
 
 let seq = 0
 const uid = (p: string) => `${p}-${Date.now().toString(36)}-${seq++}`
-
-/** What she already told us, as the starting text of an information reply. */
-function contextAsReply(c: ContextNote) {
-  return [c.choice + ".", c.note].filter((s) => s.trim()).join("\n")
-}
 
 export const useProto = create<ProtoState>()(
   persist(
@@ -168,7 +155,6 @@ export const useProto = create<ProtoState>()(
         theme: "system",
         simulateUploadError: false,
         simulateSendError: false,
-        submission: null,
         context: null,
         contextOpen: false,
         resumedAt: null,
@@ -186,7 +172,6 @@ export const useProto = create<ProtoState>()(
             now: at,
             hold: "paused",
             bannerDismissed: false,
-            submission: null,
             context: null,
             contextOpen: false,
             form: EMPTY_FORM,
@@ -213,7 +198,7 @@ export const useProto = create<ProtoState>()(
                 at,
                 read: false,
               },
-              ...s.emails.filter((e) => e.id !== "hold-paused" && e.id !== "info-needed"),
+              ...s.emails.filter((e) => e.id !== "hold-paused"),
             ],
           }))
         },
@@ -240,46 +225,6 @@ export const useProto = create<ProtoState>()(
           }))
         },
 
-        requestInfo: () => {
-          const { hold, context, now } = get()
-          if (hold !== "paused") return
-          const at = addMinutes(now, 20)
-          set((s) => ({
-            now: at,
-            hold: "info-needed",
-            bannerDismissed: false,
-            contextOpen: false,
-            sendError: false,
-            // If she already told us why, start the reply from that.
-            form: context
-              ? { ...EMPTY_FORM, note: contextAsReply(context), files: context.files }
-              : { ...EMPTY_FORM, note: s.form.note, files: s.form.files },
-            push: { id: uid("push"), title: "More information needed", body: INFO_BODY, href: HOLD_HREF },
-            notifications: [
-              {
-                id: uid("n"),
-                title: "More information needed",
-                body: INFO_BODY,
-                at,
-                read: false,
-                href: HOLD_HREF,
-              },
-              ...s.notifications,
-            ],
-            emails: [
-              {
-                id: "info-needed",
-                from: "Raven",
-                subject: "We need more information to finish our review",
-                preview: "Tell us about the recent activity on your account",
-                at,
-                read: false,
-              },
-              ...s.emails.filter((e) => e.id !== "info-needed"),
-            ],
-          }))
-        },
-
         nextDay: () => {
           const { hold, now } = get()
           if (isHeld(hold) && now < NEXT_DAY) set({ now: NEXT_DAY })
@@ -294,7 +239,6 @@ export const useProto = create<ProtoState>()(
             form: EMPTY_FORM,
             notifications: [],
             emails: [],
-            submission: null,
             context: null,
             contextOpen: false,
             resumedAt: null,
@@ -382,33 +326,6 @@ export const useProto = create<ProtoState>()(
           }, 1400)
         },
 
-        send: () => {
-          const { form, sending, hold } = get()
-          if (sending || hold !== "info-needed") return
-          const busy = form.files.some((f) => f.status !== "done")
-          if (!form.note.trim() || busy) return
-          set({ sending: true, sendError: false })
-          setTimeout(() => {
-            if (get().simulateSendError) {
-              set({ sending: false, sendError: true })
-              return
-            }
-            const s = get()
-            const at = addMinutes(s.now, 8)
-            set({
-              sending: false,
-              sendError: false,
-              hold: "reviewing",
-              now: at,
-              drawerView: "summary",
-              bannerDismissed: false,
-              submission: { reason: s.form.note.trim(), files: s.form.files, at },
-              form: EMPTY_FORM,
-            })
-            toast.success(`Details received. We'll update you within ${UPDATE_WITHIN_HRS} hrs.`)
-          }, 1400)
-        },
-
         dismissBanner: () => set({ bannerDismissed: true }),
         dismissSendError: () => set({ sendError: false }),
         dismissPush: () => set({ push: null }),
@@ -420,8 +337,8 @@ export const useProto = create<ProtoState>()(
     },
     {
       name: "raven-proto",
-      // v2: new money model and context path. Older saved state is dropped.
-      version: 2,
+      // v3: information-request flow removed. Older saved state is dropped.
+      version: 3,
       migrate: () => ({}) as ProtoState,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
@@ -441,7 +358,6 @@ export const useProto = create<ProtoState>()(
         theme: s.theme,
         simulateUploadError: s.simulateUploadError,
         simulateSendError: s.simulateSendError,
-        submission: s.submission,
         context: s.context,
         contextOpen: s.contextOpen,
         resumedAt: s.resumedAt,

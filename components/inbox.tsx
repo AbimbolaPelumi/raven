@@ -142,7 +142,7 @@ export function EmailView({ id }: { id: string }) {
             e.preventDefault()
             router.push(a.getAttribute("href") ?? "/payouts")
           }}
-          dangerouslySetInnerHTML={{ __html: holdEmailHtml(id === "info-needed" ? "info-needed" : "hold-paused") }}
+          dangerouslySetInnerHTML={{ __html: holdEmailHtml("hold-paused") }}
         />
       </article>
     </MailFrame>

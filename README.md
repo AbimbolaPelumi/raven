@@ -24,9 +24,8 @@ Press **Shift + D** to show or hide the demo panel (it is ignored while you are 
    SMS and email; each **Open** lands on `/payouts?hold=open` with the drawer open
 3. Drawer: what's on hold, progress, what happens next. Nothing to do
 4. "Tell us what happened": pick a reason, send. The timeline updates; nothing else changes
-5. **Next day**: day-two banner, the balance includes Saturday's sales
-6. Optional: **Request information** (solid red banner), reply, **Submit**, banner shows "Details received"
-7. **Clear hold**: green banner, the held payouts go back to Pending
+5. **Next day**: day-two banner; still one payout on hold (no payout for the current day)
+6. **Clear hold**: green banner, the held payouts go back to Pending
 
 The panel also has: theme (system by default, or force light/dark), simulate upload failure,
 simulate submit failure and **Reset**. State is kept in `localStorage`, so a full page reload
