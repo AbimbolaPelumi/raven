@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 
+import { AlertsPreview } from "@/components/alerts-preview"
 import { DemoControls } from "@/components/demo-controls"
 import { PushNotification } from "@/components/push-notification"
 import { Toaster } from "@/components/ui/sonner"
@@ -38,6 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       {children}
       <PushNotification />
       <DemoControls />
+      <AlertsPreview />
       <Toaster />
     </TooltipProvider>
   )

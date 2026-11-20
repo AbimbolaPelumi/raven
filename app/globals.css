@@ -78,6 +78,14 @@
   --info-dot: var(--blue-500);
   --info-text: var(--blue-700);
   --info-strong: var(--blue-500);
+  --icon-primary: var(--gray-950);
+  --icon-secondary: var(--gray-600);
+  --icon-tertiary: var(--gray-500);
+  --icon-inverse: var(--gray-0);
+  --icon-on-strong: var(--gray-0);
+  --icon-info: var(--blue-700);
+  --icon-success: var(--green-700);
+  --icon-danger: var(--red-700);
   --overlay: color-mix(in srgb, var(--gray-950) 40%, transparent);
 }
 
@@ -115,6 +123,14 @@
   --info-dot: var(--blue-500);
   --info-text: var(--blue-300);
   --info-strong: var(--blue-500);
+  --icon-primary: var(--gray-50);
+  --icon-secondary: var(--gray-400);
+  --icon-tertiary: var(--gray-500);
+  --icon-inverse: var(--gray-950);
+  --icon-on-strong: var(--gray-0);
+  --icon-info: var(--blue-300);
+  --icon-success: var(--green-300);
+  --icon-danger: var(--red-300);
   --overlay: color-mix(in srgb, var(--gray-950) 40%, transparent);
   color-scheme: dark;
 }
@@ -211,6 +227,14 @@
   --color-info-dot: var(--info-dot);
   --color-info-text: var(--info-text);
   --color-info-strong: var(--info-strong);
+  --color-icon-primary: var(--icon-primary);
+  --color-icon-secondary: var(--icon-secondary);
+  --color-icon-tertiary: var(--icon-tertiary);
+  --color-icon-inverse: var(--icon-inverse);
+  --color-icon-on-strong: var(--icon-on-strong);
+  --color-icon-info: var(--icon-info);
+  --color-icon-success: var(--icon-success);
+  --color-icon-danger: var(--icon-danger);
   --color-overlay: var(--overlay);
 }
 
@@ -296,6 +320,17 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+/* Current step on the review timeline: a slow, soft halo. */
+@keyframes ring-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--info-dot) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--info-dot) 0%, transparent);
   }
 }
 

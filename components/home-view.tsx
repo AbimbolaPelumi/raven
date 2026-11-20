@@ -63,13 +63,13 @@ export function HomeView() {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-display-medium text-text-primary">Home</h1>
         <PeriodControl value={period} onChange={setPeriod} />
       </div>
 
       {/* Hero: volume over time + balance snapshot */}
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid gap-4 md:gap-6 xl:grid-cols-3">
         <OverviewCard
           title="Gross volume"
           value={fmtNaira(cur.volume)}
@@ -99,11 +99,12 @@ export function HomeView() {
           </div>
         </OverviewCard>
 
-        <div className="grid grid-cols-2 gap-6 xl:grid-cols-1 xl:grid-rows-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-1 xl:grid-rows-2">
           <SummaryCard
             value={vm.balance.value}
             label={vm.balance.label}
             description={vm.balance.description}
+            status={vm.balance.status}
           />
           <SummaryCard
             value={vm.nextPayout.value}
@@ -121,7 +122,7 @@ export function HomeView() {
         <p className="text-body-small text-text-tertiary">Compared to previous period</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
         <OverviewCard title="Payments">
           <div
             role="img"

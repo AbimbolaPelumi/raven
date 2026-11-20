@@ -241,26 +241,29 @@ export function LineChart({
         </div>
       )}
 
+      {/* Wrapped: a table ignores width:1px and would widen the page on phones. */}
       {full && (
-        <table id={`${uid}-table`} className="sr-only">
-          <caption>{ariaLabel}</caption>
-          <thead>
-            <tr>
-              <th>Day</th>
-              <th>Current</th>
-              {previous && <th>Previous period</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((d, i) => (
-              <tr key={d.label + i}>
-                <td>{d.label}</td>
-                <td>{format(d.value)}</td>
-                {previous && <td>{format(previous[i]?.value ?? 0)}</td>}
+        <div className="sr-only">
+          <table id={`${uid}-table`} className="sr-only">
+            <caption>{ariaLabel}</caption>
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Current</th>
+                {previous && <th>Previous period</th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {data.map((d, i) => (
+                <tr key={d.label + i}>
+                  <td>{d.label}</td>
+                  <td>{format(d.value)}</td>
+                  {previous && <td>{format(previous[i]?.value ?? 0)}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

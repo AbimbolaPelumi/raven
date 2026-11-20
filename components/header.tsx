@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { MobileNav } from "@/components/sidebar"
 import { fmtDate, fmtTime } from "@/lib/proto"
 import { useProto, type Theme } from "@/lib/store"
 
@@ -35,14 +36,14 @@ function ThemeSwitcher() {
           aria-label={`Theme: ${theme}`}
           className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-border-default text-text-primary hover:bg-bg-subtle"
         >
-          <Current className="size-4" strokeWidth={1.75} aria-hidden />
+          <Current className="size-4 text-icon-primary" strokeWidth={1.75} aria-hidden />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuRadioGroup value={theme} onValueChange={(v) => setTheme(v as Theme)}>
           {THEMES.map(({ value, label, icon: Icon }) => (
             <DropdownMenuRadioItem key={value} value={value} className="cursor-pointer">
-              <Icon className="size-4" strokeWidth={1.75} aria-hidden />
+              <Icon className="size-4 text-icon-secondary" strokeWidth={1.75} aria-hidden />
               {label}
             </DropdownMenuRadioItem>
           ))}
@@ -59,9 +60,10 @@ export function Header() {
   const unread = notifications.some((n) => !n.read)
 
   return (
-    <header className="flex h-[70px] shrink-0 items-center justify-between border-b border-border-default bg-bg-base px-6">
-      <label className="flex items-center gap-3 text-text-secondary">
-        <Search className="size-[18px] shrink-0" strokeWidth={1.75} aria-hidden />
+    <header className="flex h-[60px] shrink-0 items-center justify-between gap-3 border-b border-border-default bg-bg-base px-4 md:h-[70px] md:px-6">
+      <MobileNav />
+      <label className="flex min-w-0 items-center gap-3 text-text-secondary max-md:hidden">
+        <Search className="size-[18px] shrink-0 text-icon-secondary" strokeWidth={1.75} aria-hidden />
         <span className="sr-only">Search</span>
         <input
           type="search"
@@ -79,16 +81,16 @@ export function Header() {
               aria-label={unread ? "Notifications, unread" : "Notifications"}
               className="relative flex size-8 cursor-pointer items-center justify-center rounded-full border border-border-default text-text-primary hover:bg-bg-subtle"
             >
-              <Bell className="size-4" strokeWidth={1.75} aria-hidden />
+              <Bell className="size-4 text-icon-primary" strokeWidth={1.75} aria-hidden />
               {unread && (
                 <span
                   aria-hidden
-                  className="absolute top-0 right-0 size-2 rounded-full bg-hold-dot ring-2 ring-bg-base"
+                  className="absolute top-0 right-0 size-2 rounded-full bg-info-dot ring-2 ring-bg-base"
                 />
               )}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[340px]">
+          <DropdownMenuContent align="end" className="w-[340px] max-w-[calc(100vw-32px)]">
             <DropdownMenuLabel className="text-body-medium-strong">
               Notifications
             </DropdownMenuLabel>

@@ -1,4 +1,4 @@
-import { HOLD_HREF, HOLD_REF } from "@/lib/proto"
+import { ALERT, HOLD_HREF, HOLD_REF, UPDATE_BY, fmtDayShort } from "@/lib/proto"
 
 /**
  * Email-safe HTML: table layout, inline styles only, system fonts, no external
@@ -12,25 +12,25 @@ const COPY: Record<
   HoldEmailKind,
   { heading: string; paragraphs: string[]; cta: string; href: string }
 > = {
-  // Scenario 1: processor-led review, nothing is asked of the merchant.
+  // Under review: Raven is doing the work, nothing is asked of her.
   "hold-paused": {
-    heading: "Your payouts are paused",
+    heading: ALERT.emailSubject,
     paragraphs: [
-      "We've temporarily paused your payouts while we review recent activity on your account. Your money is safe, and customers can still pay you.",
-      "No action is needed right now. We'll contact you if we need any additional information.",
+      "We're reviewing recent activity on your account, so your payouts are paused for now. Customers can still pay you, and new sales are added to your balance.",
+      `No action needed. We'll update you by ${fmtDayShort(UPDATE_BY)}.`,
     ],
     cta: "View details",
     href: HOLD_HREF,
   },
-  // Scenario 2: the processor needs something.
+  // The exception: Raven needs something from her.
   "info-needed": {
-    heading: "We need additional information",
+    heading: "We need more information to finish our review",
     paragraphs: [
-      "We need some additional information to continue reviewing your payouts.",
-      "Your payouts remain paused while we complete our review. Customers can still pay you.",
+      "Tell us what caused the recent increase in activity, and add anything that shows it.",
+      "Your payouts stay paused until we finish. Customers can still pay you.",
     ],
     cta: "Provide details",
-    href: `${HOLD_HREF}&view=form`,
+    href: HOLD_HREF,
   },
 }
 
@@ -68,7 +68,7 @@ export function holdEmailHtml(kind: HoldEmailKind = "hold-paused") {
         </tr>
         <tr>
           <td style="border-top:1px solid #d9d9d9;padding-top:16px;font-family:${font};font-size:13px;line-height:20px;color:#595959;">
-            Hold reference ${HOLD_REF} &middot; Questions? <a href="#" data-contact="true" style="color:#000000;text-decoration:underline;">Contact support</a>
+            Reference ${HOLD_REF} &middot; Questions? <a href="#" data-contact="true" style="color:#000000;text-decoration:underline;">Contact support</a>
           </td>
         </tr>
       </table>

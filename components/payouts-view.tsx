@@ -38,16 +38,17 @@ export function PayoutsView() {
   const rows = status === "all" ? vm.rows : vm.rows.filter((r) => r.status === status)
   const statusLabel = FILTERS.find((f) => f.value === status)?.label ?? "All"
 
-  // The shell supplies sidebar, header, banner, modal and page padding.
+  // The shell supplies sidebar, header, banner, drawer and page padding.
   return (
     <>
       <h1 className="text-display-medium text-text-primary">Payouts</h1>
 
-      <div className="flex items-stretch gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
         <SummaryCard
           value={vm.balance.value}
           label={vm.balance.label}
           description={vm.balance.description}
+          status={vm.balance.status}
         />
         <SummaryCard
           value={vm.nextPayout.value}
@@ -58,14 +59,14 @@ export function PayoutsView() {
         />
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                leadingIcon={<CalendarDays strokeWidth={1.75} />}
-                trailingIcon={<ChevronDown strokeWidth={1.75} />}
+                leadingIcon={<CalendarDays className="text-icon-primary" strokeWidth={1.75} />}
+                trailingIcon={<ChevronDown className="text-icon-primary" strokeWidth={1.75} />}
               >
                 Last 30 days
               </Button>
@@ -79,7 +80,7 @@ export function PayoutsView() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" trailingIcon={<ChevronDown strokeWidth={1.75} />}>
+              <Button variant="outline" trailingIcon={<ChevronDown className="text-icon-primary" strokeWidth={1.75} />}>
                 Status: {statusLabel}
               </Button>
             </DropdownMenuTrigger>
@@ -100,7 +101,7 @@ export function PayoutsView() {
 
         <Button
           variant="outline"
-          leadingIcon={<Download strokeWidth={1.75} />}
+          leadingIcon={<Download className="text-icon-primary" strokeWidth={1.75} />}
           onClick={() => toast("Export isn't part of this prototype.")}
         >
           Export

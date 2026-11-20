@@ -5,16 +5,21 @@ import { createJSONStorage, persist } from "zustand/middleware"
 import { toast } from "sonner"
 
 import {
+  ALERT,
   CLEARED_NOW,
-  TWO_DAYS_LATER,
   HOLD_HREF,
   HOLD_STARTED,
   MAX_FILE_BYTES,
+  NEXT_DAY,
   NEXT_PAYOUT_DAY,
   RESET_NOW,
   addMinutes,
+  UPDATE_BY,
   fmtDate,
+  fmtDayShort,
+  isHeld,
   type AppNotification,
+  type ContextNote,
   type Email,
   type HoldState,
   type PushNote,
@@ -25,54 +30,72 @@ import {
 /** "system" follows the OS setting and updates live. */
 export type Theme = "light" | "dark" | "system"
 
-export type DrawerView = "summary" | "form"
+/** "support" is the pre-filled message to support, inside the drawer. */
+export type DrawerView = "summary" | "support"
+
+/**
+ * One form, used by whichever is open: the optional "Expected this activity?"
+ * context, or the reply to an information request. Only one can be open.
+ */
+export interface FormState {
+  choice: string
+  note: string
+  link: string
+  files: UploadFile[]
+}
 
 export interface ProtoState {
   /** Simulated date and time, naive "YYYY-MM-DDTHH:mm". */
   now: string
   hold: HoldState
   drawerOpen: boolean
-  /** "form" is the information submission flow (only in Scenario 2). */
   drawerView: DrawerView
-  form: { reason: string; files: UploadFile[] }
+  form: FormState
   notifications: AppNotification[]
   emails: Email[]
   theme: Theme
   simulateUploadError: boolean
   simulateSendError: boolean
 
-  // Supporting state (not part of the core contract, but derived UI needs it)
   submission: Submission | null
+  context: ContextNote | null
+  contextOpen: boolean
   resumedAt: string | null
   bannerDismissed: boolean
   sending: boolean
   sendError: boolean
   push: PushNote | null
   demoOpen: boolean
+  alertsOpen: boolean
   hydrated: boolean
 
   // Demo controls
   placeHold: () => void
   clearHold: () => void
-  /** Processor: asks the merchant for more information (Scenario 1 -> 2). */
+  /** Processor asks for more information (the exception, red). */
   requestInfo: () => void
-  /** Processor: finishes the review but keeps payouts paused (back to the internal-review state). */
-  continueRestriction: () => void
-  passTwoDays: () => void
+  /** Moves the clock to the next morning with the hold still on. */
+  nextDay: () => void
   reset: () => void
   setTheme: (t: Theme) => void
   setSimulateUploadError: (v: boolean) => void
   setSimulateSendError: (v: boolean) => void
   setDemoOpen: (v: boolean) => void
+  setAlertsOpen: (v: boolean) => void
 
   // Product
   openDrawer: (view?: DrawerView) => void
   setDrawerView: (v: DrawerView) => void
   closeDrawer: () => void
-  setReason: (v: string) => void
+  openContext: () => void
+  cancelContext: () => void
+  setForm: (patch: Partial<Omit<FormState, "files">>) => void
   addFiles: (files: File[]) => void
   removeFile: (id: string) => void
   retryFile: (id: string) => void
+  /** Sends the optional context. Changes nothing about the hold. */
+  sendContext: () => void
+  /** Sends the reply to an information request. */
   send: () => void
   dismissBanner: () => void
   dismissSendError: () => void
@@ -81,15 +104,28 @@ export interface ProtoState {
   markEmailRead: (id: string) => void
 }
 
-const PAUSED_BODY =
-  "We've temporarily paused your payouts while we review recent account activity."
-const INFO_BODY = "We need some additional information to continue reviewing your payouts."
-const INFO_HREF = `${HOLD_HREF}&view=form`
-
-const EMPTY_FORM = { reason: "", files: [] as UploadFile[] }
+const INFO_BODY = "We need more information to finish our review."
+const EMPTY_FORM: FormState = { choice: "", note: "", link: "", files: [] }
 const ALLOWED = /\.(pdf|jpe?g|png)$/i
+/**
+ * The element that opened the drawer. The drawer is opened from the store
+ * (banner, cards, rows, alerts, URL), not a Radix Trigger, so it records the
+ * opener itself and focus goes back there on close.
+ */
+let opener: HTMLElement | null = null
+export function takeOpener() {
+  const el = opener
+  opener = null
+  return el
+}
+
 let seq = 0
 const uid = (p: string) => `${p}-${Date.now().toString(36)}-${seq++}`
+
+/** What she already told us, as the starting text of an information reply. */
+function contextAsReply(c: ContextNote) {
+  return [c.choice + ".", c.note, c.link].filter((s) => s.trim()).join("\n")
+}
 
 export const useProto = create<ProtoState>()(
   persist(
@@ -136,12 +172,15 @@ export const useProto = create<ProtoState>()(
         simulateUploadError: false,
         simulateSendError: false,
         submission: null,
+        context: null,
+        contextOpen: false,
         resumedAt: null,
         bannerDismissed: false,
         sending: false,
         sendError: false,
         push: null,
         demoOpen: false,
+        alertsOpen: false,
         hydrated: false,
 
         placeHold: () => {
@@ -151,19 +190,17 @@ export const useProto = create<ProtoState>()(
             hold: "paused",
             bannerDismissed: false,
             submission: null,
+            context: null,
+            contextOpen: false,
+            form: EMPTY_FORM,
             resumedAt: null,
             sendError: false,
-            push: {
-              id: uid("push"),
-              title: "Payouts paused",
-              body: PAUSED_BODY,
-              href: HOLD_HREF,
-            },
+            push: { id: uid("push"), title: ALERT.pushTitle, body: ALERT.pushBody, href: HOLD_HREF },
             notifications: [
               {
                 id: uid("n"),
-                title: "Payouts paused",
-                body: PAUSED_BODY,
+                title: ALERT.pushTitle,
+                body: ALERT.pushBody,
                 at,
                 read: false,
                 href: HOLD_HREF,
@@ -174,8 +211,8 @@ export const useProto = create<ProtoState>()(
               {
                 id: "hold-paused",
                 from: "Raven",
-                subject: "Your payouts are paused",
-                preview: "No action is needed right now",
+                subject: ALERT.emailSubject,
+                preview: ALERT.emailPreview,
                 at,
                 read: false,
               },
@@ -197,37 +234,38 @@ export const useProto = create<ProtoState>()(
             bannerDismissed: false,
             sending: false,
             sendError: false,
+            contextOpen: false,
             push: { id: uid("push"), title: "Payouts resumed", body, href: "/payouts" },
             notifications: [
-              {
-                id: uid("n"),
-                title: "Payouts resumed",
-                body,
-                at,
-                read: false,
-                href: "/payouts",
-              },
+              { id: uid("n"), title: "Payouts resumed", body, at, read: false, href: "/payouts" },
               ...s.notifications,
             ],
           }))
         },
 
         requestInfo: () => {
-          if (get().hold !== "paused") return
-          const at = addMinutes(get().now, 20)
+          const { hold, context, now } = get()
+          if (hold !== "paused") return
+          const at = addMinutes(now, 20)
           set((s) => ({
             now: at,
             hold: "info-needed",
             bannerDismissed: false,
-            push: { id: uid("push"), title: "Additional information needed", body: INFO_BODY, href: INFO_HREF },
+            contextOpen: false,
+            sendError: false,
+            // If she already told us why, start the reply from that.
+            form: context
+              ? { ...EMPTY_FORM, note: contextAsReply(context), files: context.files }
+              : { ...EMPTY_FORM, note: s.form.note, files: s.form.files },
+            push: { id: uid("push"), title: "More information needed", body: INFO_BODY, href: HOLD_HREF },
             notifications: [
               {
                 id: uid("n"),
-                title: "Additional information needed",
+                title: "More information needed",
                 body: INFO_BODY,
                 at,
                 read: false,
-                href: INFO_HREF,
+                href: HOLD_HREF,
               },
               ...s.notifications,
             ],
@@ -235,8 +273,8 @@ export const useProto = create<ProtoState>()(
               {
                 id: "info-needed",
                 from: "Raven",
-                subject: "We need additional information",
-                preview: "Provide a few details so we can continue our review",
+                subject: "We need more information to finish our review",
+                preview: "Tell us what caused the recent increase in activity",
                 at,
                 read: false,
               },
@@ -245,17 +283,9 @@ export const useProto = create<ProtoState>()(
           }))
         },
 
-        continueRestriction: () => {
-          if (get().hold !== "reviewing") return
-          // Review done, payouts stay paused: back to the processor-led state.
-          set({ hold: "paused", submission: null, drawerOpen: false, drawerView: "summary" })
-        },
-
-        // Two days after the hold was placed, with the hold still in place.
-        passTwoDays: () => {
+        nextDay: () => {
           const { hold, now } = get()
-          const held = hold === "paused" || hold === "info-needed" || hold === "reviewing"
-          if (held && now < TWO_DAYS_LATER) set({ now: TWO_DAYS_LATER })
+          if (isHeld(hold) && now < NEXT_DAY) set({ now: NEXT_DAY })
         },
 
         reset: () =>
@@ -263,48 +293,53 @@ export const useProto = create<ProtoState>()(
             now: RESET_NOW,
             hold: "none",
             drawerOpen: false,
-            form: { reason: "", files: [] },
+            drawerView: "summary",
+            form: EMPTY_FORM,
             notifications: [],
             emails: [],
             submission: null,
+            context: null,
+            contextOpen: false,
             resumedAt: null,
             bannerDismissed: false,
             sending: false,
             sendError: false,
             push: null,
+            alertsOpen: false,
           }),
 
         setTheme: (theme) => set({ theme }),
         setSimulateUploadError: (v) => set({ simulateUploadError: v }),
         setSimulateSendError: (v) => set({ simulateSendError: v }),
         setDemoOpen: (v) => set({ demoOpen: v }),
+        setAlertsOpen: (v) => set({ alertsOpen: v }),
 
         openDrawer: (view = "summary") => {
-          if (get().hold !== "none") set({ drawerOpen: true, drawerView: view })
+          if (get().hold === "none") return
+          if (!get().drawerOpen && typeof document !== "undefined") {
+            const el = document.activeElement
+            opener = el instanceof HTMLElement && el !== document.body ? el : null
+          }
+          set({ drawerOpen: true, drawerView: view })
         },
         setDrawerView: (drawerView) => set({ drawerView }),
+        // Closing keeps whatever she typed; only the error goes away.
         closeDrawer: () => set({ drawerOpen: false, drawerView: "summary", sendError: false }),
+
+        openContext: () => set({ contextOpen: true, sendError: false }),
+        cancelContext: () => set({ contextOpen: false, sendError: false, form: EMPTY_FORM }),
+
         // Editing anything means the user is responding to the error: clear it.
-        setReason: (reason) => set((s) => ({ form: { ...s.form, reason }, sendError: false })),
+        setForm: (patch) => set((s) => ({ form: { ...s.form, ...patch }, sendError: false })),
 
         addFiles: (incoming) => {
           const added: UploadFile[] = incoming.map((f) => {
             const base = { id: uid("f"), name: f.name, size: f.size, progress: 0 }
             if (!ALLOWED.test(f.name)) {
-              return {
-                ...base,
-                status: "error" as const,
-                error: "Only PDF, JPG or PNG files.",
-                retryable: false,
-              }
+              return { ...base, status: "error" as const, error: "Only PDF, JPG or PNG files.", retryable: false }
             }
             if (f.size > MAX_FILE_BYTES) {
-              return {
-                ...base,
-                status: "error" as const,
-                error: "This file is over 10MB.",
-                retryable: false,
-              }
+              return { ...base, status: "error" as const, error: "This file is over 10MB.", retryable: false }
             }
             return { ...base, status: "uploading" as const, retryable: true }
           })
@@ -320,11 +355,42 @@ export const useProto = create<ProtoState>()(
 
         retryFile: (id) => runUpload(id),
 
+        sendContext: () => {
+          const { form, sending, hold } = get()
+          if (sending || hold !== "paused") return
+          const busy = form.files.some((f) => f.status !== "done")
+          if (!form.choice || busy) return
+          set({ sending: true, sendError: false })
+          setTimeout(() => {
+            if (get().simulateSendError) {
+              set({ sending: false, sendError: true })
+              return
+            }
+            const s = get()
+            const at = addMinutes(s.now, 6)
+            set({
+              sending: false,
+              sendError: false,
+              now: at,
+              contextOpen: false,
+              context: {
+                choice: s.form.choice,
+                note: s.form.note.trim(),
+                link: s.form.link.trim(),
+                files: s.form.files,
+                at,
+              },
+              form: EMPTY_FORM,
+            })
+            toast.success("Sent. We've added this to your review.")
+          }, 1400)
+        },
+
         send: () => {
           const { form, sending, hold } = get()
           if (sending || hold !== "info-needed") return
           const busy = form.files.some((f) => f.status !== "done")
-          if (!form.reason.trim() || busy) return
+          if (!form.note.trim() || busy) return
           set({ sending: true, sendError: false })
           setTimeout(() => {
             if (get().simulateSendError) {
@@ -338,17 +404,12 @@ export const useProto = create<ProtoState>()(
               sendError: false,
               hold: "reviewing",
               now: at,
-              drawerOpen: false,
               drawerView: "summary",
               bannerDismissed: false,
-              submission: {
-                reason: s.form.reason.trim(),
-                files: s.form.files,
-                at,
-              },
-              form: { reason: "", files: [] },
+              submission: { reason: s.form.note.trim(), files: s.form.files, at },
+              form: EMPTY_FORM,
             })
-            toast.success("Details submitted. We'll reply within one working day.")
+            toast.success(`Details received. We'll update you by ${fmtDayShort(UPDATE_BY)}.`)
           }, 1400)
         },
 
@@ -356,27 +417,25 @@ export const useProto = create<ProtoState>()(
         dismissSendError: () => set({ sendError: false }),
         dismissPush: () => set({ push: null }),
         markNotificationsRead: () =>
-          set((s) => ({
-            notifications: s.notifications.map((n) => ({ ...n, read: true })),
-          })),
+          set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
         markEmailRead: (id) =>
-          set((s) => ({
-            emails: s.emails.map((e) => (e.id === id ? { ...e, read: true } : e)),
-          })),
+          set((s) => ({ emails: s.emails.map((e) => (e.id === id ? { ...e, read: true } : e)) })),
       }
     },
     {
       name: "raven-proto",
-      version: 1,
+      // v2: new money model and context path. Older saved state is dropped.
+      version: 2,
+      migrate: () => ({}) as ProtoState,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
-      // Transient UI (push toast, sending spinner, panel visibility) is not kept.
+      // Transient UI (push toast, sending spinner, panels) is not kept.
       partialize: (s) => ({
         now: s.now,
         hold: s.hold,
         drawerOpen: s.drawerOpen,
         form: {
-          reason: s.form.reason,
+          ...s.form,
           files: s.form.files.map((f) =>
             f.status === "uploading" ? { ...f, status: "done" as const, progress: 100 } : f
           ),
@@ -387,6 +446,8 @@ export const useProto = create<ProtoState>()(
         simulateUploadError: s.simulateUploadError,
         simulateSendError: s.simulateSendError,
         submission: s.submission,
+        context: s.context,
+        contextOpen: s.contextOpen,
         resumedAt: s.resumedAt,
         bannerDismissed: s.bannerDismissed,
       }),

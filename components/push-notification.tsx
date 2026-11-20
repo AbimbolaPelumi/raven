@@ -8,7 +8,7 @@ import { useProto } from "@/lib/store"
 
 /**
  * In-app system notification, top right. Styled like a desktop notification
- * without borrowing any real OS or brand look. Click goes to the hold drawer.
+ * without borrowing any real OS or brand look. Click goes to /payouts?hold=open (banner + drawer).
  */
 export function PushNotification() {
   const push = useProto((s) => s.push)
@@ -57,9 +57,9 @@ export function PushNotification() {
         type="button"
         onClick={dismiss}
         aria-label="Dismiss notification"
-        className="absolute top-2 right-2 flex size-6 cursor-pointer items-center justify-center text-text-tertiary opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:text-text-primary focus-visible:opacity-100"
+        className="absolute top-2 right-2 flex size-6 cursor-pointer items-center justify-center opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:text-text-primary focus-visible:opacity-100"
       >
-        <X className="size-4" strokeWidth={1.75} />
+        <X className="size-4 text-icon-tertiary" strokeWidth={1.75} />
       </button>
     </div>
   )

@@ -13,8 +13,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         paid: "bg-success-bg text-success-text",
-        "on-hold": "bg-hold-bg text-hold-text",
-        scheduled: "bg-info-bg text-info-text",
+        // Blue: Raven is reviewing. Red is reserved for "she needs to act".
+        "on-hold": "bg-info-bg text-info-text",
+        scheduled: "bg-bg-muted text-text-secondary",
         succeeded: "bg-success-bg text-success-text",
         refunded: "bg-bg-muted text-text-secondary",
         failed: "bg-danger-bg text-danger-text",

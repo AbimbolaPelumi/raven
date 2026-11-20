@@ -9,8 +9,8 @@ const LABEL: Record<PayoutStatus, string> = {
 
 const DOT: Record<PayoutStatus, string> = {
   paid: "bg-success-dot",
-  "on-hold": "bg-hold-dot",
-  scheduled: "bg-info-dot",
+  "on-hold": "bg-info-dot",
+  scheduled: "bg-text-tertiary",
 }
 
 /** Status is always conveyed by text, not colour alone. */

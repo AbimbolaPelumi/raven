@@ -5,22 +5,21 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import { Banner } from "@/components/banner"
 import { Header } from "@/components/header"
-import { HoldDialog } from "@/components/hold-dialog"
+import { HoldDrawer } from "@/components/hold-drawer"
 import { Sidebar } from "@/components/sidebar"
 import { derive } from "@/lib/proto"
 import { useProto } from "@/lib/store"
 
 /**
  * Chrome shared by every signed-in page: sidebar, header, the hold banner and
- * the review-details modal. Pages render only their own content as children, so
- * the banner and modal behave the same on Home, Payouts and anything added later.
+ * the review drawer. Pages render only their own content as children, so the
+ * banner and drawer behave the same on Home, Payouts and anything added later.
  */
 function Shell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
   const holdParam = params.get("hold")
-  const viewParam = params.get("view")
 
   const hold = useProto((s) => s.hold)
   const now = useProto((s) => s.now)
@@ -34,13 +33,12 @@ function Shell({ children }: { children: React.ReactNode }) {
     [hold, now, bannerDismissed]
   )
 
-  // `?hold=open` (push notification, email, bell) opens the modal once state allows it.
-  // `&view=form` goes straight to the information form (only in "info needed").
+  // `?hold=open` (push, SMS, email, bell) opens the drawer once state allows it.
   useEffect(() => {
-    if (holdParam === "open") openDrawer(viewParam === "form" ? "form" : "summary")
-  }, [holdParam, viewParam, openDrawer])
+    if (holdParam === "open") openDrawer()
+  }, [holdParam, openDrawer])
 
-  // Keep the URL honest: once the modal closes, drop the params (on whichever page we are).
+  // Keep the URL honest: once the drawer closes, drop the params (on whichever page we are).
   useEffect(() => {
     if (!drawerOpen && holdParam === "open" && hold !== "none") {
       router.replace(pathname, { scroll: false })
@@ -54,13 +52,11 @@ function Shell({ children }: { children: React.ReactNode }) {
         <Header />
         <Banner
           banner={banner}
-          onAction={(a) =>
-            a === "dismiss" ? dismissBanner() : openDrawer(a === "provide" ? "form" : "summary")
-          }
+          onAction={(a) => (a === "dismiss" ? dismissBanner() : openDrawer())}
         />
-        <main className="flex flex-col gap-6 p-6">{children}</main>
+        <main className="flex min-w-0 flex-col gap-6 p-4 md:p-6">{children}</main>
       </div>
-      <HoldDialog />
+      <HoldDrawer />
     </div>
   )
 }

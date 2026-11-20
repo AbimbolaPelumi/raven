@@ -3,11 +3,11 @@
  * clock (`now`), so server and client render identically and the numbers on
  * Home always agree with the Payouts page:
  *
- *  - Days we already show on Payouts (paid rows and held rows) use their real
- *    payout amount as that day's volume.
+ *  - Days the Payouts page knows about use the same sales figures
+ *    (`salesFor`), including today's sales so far.
  *  - Earlier days are deterministic, plausible filler (weekly shape + jitter).
  */
-import { HELD_ROWS, PAID_ROWS, addMinutes, fmtTime } from "@/lib/proto"
+import { addMinutes, dayOf, fmtTime, salesFor } from "@/lib/proto"
 
 export type Period = 7 | 30 | 90
 export const PERIODS: Period[] = [7, 30, 90]
@@ -45,30 +45,24 @@ function noise(key: string) {
   return ((h >>> 0) % 10_000) / 10_000
 }
 
-// Sun..Sat. Shaped like the real payout days (Fri highest, Sun lowest).
+// Sun..Sat. Shaped like real sales days (Fri highest, Sun lowest).
 const WEEKDAY = [0.65, 1.04, 0.96, 1.08, 1.0, 1.3, 1.08]
-
-const KNOWN = new Map<string, number>([
-  ...PAID_ROWS.map((r) => [r.day, r.amount] as const),
-])
 
 function fillerVolume(day: string) {
   const weekday = new Date(toUTC(day)).getUTCDay()
   return Math.round((340_000 * WEEKDAY[weekday] * (0.88 + noise(`v${day}`) * 0.24)) / 25) * 25
 }
 
-/** The latest day that has a payout row at `now` (held days appear at 3pm). */
+/** The chart runs up to today (today's bar is sales so far). */
 export function lastDataDay(now: string) {
-  let last = PAID_ROWS.map((r) => r.day).sort().at(-1) ?? "2026-11-26"
-  for (const r of HELD_ROWS) if (`${r.day}T15:00` <= now) last = r.day
-  return last
+  return dayOf(now)
 }
 
+/** Sales for a day. Known days come from `salesFor`, the same source as Payouts. */
 export function dailyVolume(day: string, now: string) {
-  const held = HELD_ROWS.find((r) => r.day === day)
-  if (held) return `${day}T15:00` <= now ? held.amount : null
-  if (day > lastDataDay(now)) return null
-  return KNOWN.get(day) ?? fillerVolume(day)
+  const v = salesFor(day, now)
+  if (v === null) return null
+  return v ?? fillerVolume(day)
 }
 
 /* --------------------------------- metrics --------------------------------- */

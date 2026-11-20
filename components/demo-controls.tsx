@@ -5,7 +5,7 @@ import { RotateCcw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { TWO_DAYS_LATER, fmtDateTime } from "@/lib/proto"
+import { NEXT_DAY, fmtDateTime, isHeld } from "@/lib/proto"
 import { useProto } from "@/lib/store"
 
 function isEditable(el: EventTarget | null) {
@@ -70,7 +70,7 @@ export function DemoControls() {
     <aside
       data-proto-overlay
       aria-label="Demo controls"
-      className="pointer-events-auto fixed bottom-4 left-4 z-[90] w-[280px] border border-border-strong bg-bg-base p-4 shadow-[0_8px_24px_rgba(0,0,0,0.16)]"
+      className="pointer-events-auto fixed right-2 bottom-2 left-2 z-[90] md:right-auto md:bottom-4 md:left-4 md:w-[280px] border border-border-strong bg-bg-base p-4 shadow-[0_8px_24px_rgba(0,0,0,0.16)]"
     >
       <div className="flex items-baseline justify-between">
         <h2 className="text-body-medium-strong text-text-primary">Demo controls</h2>
@@ -103,27 +103,24 @@ export function DemoControls() {
       >
         Request information
       </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="mt-2 w-full"
-        disabled={s.hold !== "reviewing"}
-        onClick={s.continueRestriction}
-      >
-        Continue restriction
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="mt-2 w-full"
-        disabled={
-          (s.hold !== "paused" && s.hold !== "info-needed" && s.hold !== "reviewing") ||
-          s.now >= TWO_DAYS_LATER
-        }
-        onClick={s.passTwoDays}
-      >
-        Pass 2 days
-      </Button>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!isHeld(s.hold) || s.now >= NEXT_DAY}
+          onClick={s.nextDay}
+        >
+          Next day
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={s.hold === "none"}
+          onClick={() => s.setAlertsOpen(true)}
+        >
+          Show alerts
+        </Button>
+      </div>
 
       <div className="mt-3 border-t border-border-default pt-2">
         <div className="flex items-center justify-between gap-3 py-1.5">
@@ -167,7 +164,7 @@ export function DemoControls() {
       </div>
 
       <Button size="sm" variant="ghost" className="mt-2 w-full" onClick={s.reset}>
-        <RotateCcw />
+        <RotateCcw className="text-icon-primary" />
         Reset
       </Button>
     </aside>

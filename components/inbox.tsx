@@ -20,7 +20,7 @@ function MailFrame({ children }: { children: React.ReactNode }) {
             href="/inbox"
             className="flex items-center gap-2 text-body-medium-strong text-text-primary"
           >
-            <InboxIcon className="size-4" strokeWidth={1.75} aria-hidden />
+            <InboxIcon className="size-4 text-icon-primary" strokeWidth={1.75} aria-hidden />
             Inbox
           </Link>
           <Link
@@ -69,7 +69,7 @@ export function InboxList() {
                     <span className={cn("text-text-primary", !e.read && "font-medium")}>
                       {e.subject}
                     </span>
-                    <span className="text-text-secondary"> — {e.preview}</span>
+                    <span className="text-text-secondary"> · {e.preview}</span>
                   </span>
                   <span className="shrink-0 text-body-small text-text-tertiary">
                     {fmtTime(e.at)}
@@ -102,7 +102,7 @@ export function EmailView({ id }: { id: string }) {
             href="/inbox"
             className="mt-3 inline-flex items-center gap-1.5 text-body-medium text-text-primary underline underline-offset-2"
           >
-            <ArrowLeft className="size-4" strokeWidth={1.75} aria-hidden />
+            <ArrowLeft className="size-4 text-icon-secondary" strokeWidth={1.75} aria-hidden />
             Back to inbox
           </Link>
         </div>
@@ -118,7 +118,7 @@ export function EmailView({ id }: { id: string }) {
             href="/inbox"
             className="mb-3 inline-flex items-center gap-1.5 text-body-medium text-text-secondary hover:text-text-primary"
           >
-            <ArrowLeft className="size-4" strokeWidth={1.75} aria-hidden />
+            <ArrowLeft className="size-4 text-icon-secondary" strokeWidth={1.75} aria-hidden />
             Inbox
           </Link>
           <h1 className="text-heading-large text-text-primary">{email.subject}</h1>
