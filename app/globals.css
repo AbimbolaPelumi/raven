@@ -1,0 +1,309 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------ */
+/* Primitives: raw values. Never used directly in components.          */
+/* ------------------------------------------------------------------ */
+:root {
+  /* gray */
+  --gray-0: #ffffff;
+  --gray-50: #f7f8fa;
+  --gray-100: #f0f2f5;
+  --gray-150: #e8ebef;
+  --gray-200: #e1e4e9;
+  --gray-300: #cfd3da;
+  --gray-400: #a3a9b4;
+  --gray-500: #858c98;
+  --gray-600: #626976;
+  --gray-700: #3a3f48;
+  --gray-800: #24272e;
+  --gray-850: #1c1f24;
+  --gray-900: #15171b;
+  --gray-950: #0c0d10;
+  /* status */
+  --green-100: #ddf1e4;
+  --green-300: #3ddc97;
+  --green-500: #00c969;
+  --green-700: #00804f;
+  --green-900: #0f2a1c;
+  --red-100: #fee4e2;
+  --red-300: #fda29b;
+  --red-500: #f04438;
+  --red-600: #d92d20;
+  --red-700: #b42318;
+  --red-900: #3a1412;
+  --blue-100: #ddebff;
+  --blue-300: #6ea8fe;
+  --blue-500: #1f6feb;
+  --blue-700: #1a5fcc;
+  --blue-900: #10213d;
+}
+
+/* ------------------------------------------------------------------ */
+/* Theme: what components use. Light by default, dark via .dark.       */
+/* ------------------------------------------------------------------ */
+:root {
+  --bg-base: var(--gray-0);
+  --bg-subtle: var(--gray-50);
+  --bg-muted: var(--gray-100);
+  --bg-secondary: var(--gray-150);
+  --border-default: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --text-primary: var(--gray-950);
+  --text-secondary: var(--gray-600);
+  --text-head: var(--gray-600);
+  --text-tertiary: var(--gray-500);
+  --text-disabled: var(--gray-300);
+  --text-inverse: var(--gray-0);
+  --fill-inverse: var(--gray-900);
+  --brand-primary: var(--gray-900);
+  --brand-subtle: var(--gray-100);
+  --brand-text: var(--gray-950);
+  --brand-on: var(--gray-0);
+  --success-bg: var(--green-100);
+  --success-dot: var(--green-500);
+  --success-text: var(--green-700);
+  --success-strong: var(--green-700);
+  --hold-bg: var(--red-100);
+  --hold-dot: var(--red-500);
+  --hold-text: var(--red-700);
+  --hold-strong: var(--red-600);
+  --hold-on-strong: var(--gray-0);
+  --danger-bg: var(--red-100);
+  --danger-dot: var(--red-500);
+  --danger-text: var(--red-700);
+  --info-bg: var(--blue-100);
+  --info-dot: var(--blue-500);
+  --info-text: var(--blue-700);
+  --info-strong: var(--blue-500);
+  --overlay: color-mix(in srgb, var(--gray-950) 40%, transparent);
+}
+
+.dark {
+  --bg-base: var(--gray-950);
+  --bg-subtle: var(--gray-900);
+  --bg-muted: var(--gray-850);
+  --bg-secondary: var(--gray-800);
+  --border-default: var(--gray-800);
+  --border-strong: var(--gray-700);
+  --text-primary: var(--gray-50);
+  --text-secondary: var(--gray-400);
+  --text-head: var(--gray-400);
+  --text-tertiary: var(--gray-500);
+  --text-disabled: var(--gray-700);
+  --text-inverse: var(--gray-950);
+  --fill-inverse: var(--gray-50);
+  --brand-primary: var(--gray-50);
+  --brand-subtle: var(--gray-850);
+  --brand-text: var(--gray-50);
+  --brand-on: var(--gray-950);
+  --success-bg: var(--green-900);
+  --success-dot: var(--green-500);
+  --success-text: var(--green-300);
+  --success-strong: var(--green-700);
+  --hold-bg: var(--red-900);
+  --hold-dot: var(--red-500);
+  --hold-text: var(--red-300);
+  --hold-strong: var(--red-600);
+  --hold-on-strong: var(--gray-0);
+  --danger-bg: var(--red-900);
+  --danger-dot: var(--red-500);
+  --danger-text: var(--red-300);
+  --info-bg: var(--blue-900);
+  --info-dot: var(--blue-500);
+  --info-text: var(--blue-300);
+  --info-strong: var(--blue-500);
+  --overlay: color-mix(in srgb, var(--gray-950) 40%, transparent);
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ */
+/* shadcn variables, pointed at the theme tokens above.                */
+/* ------------------------------------------------------------------ */
+:root {
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+  --card: var(--bg-base);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-base);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--brand-primary);
+  --primary-foreground: var(--brand-on);
+  --secondary: var(--bg-subtle);
+  --muted: var(--bg-subtle);
+  --accent: var(--bg-subtle);
+  --secondary-foreground: var(--text-primary);
+  --accent-foreground: var(--text-primary);
+  --muted-foreground: var(--text-secondary);
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--text-primary);
+  --destructive: var(--hold-strong);
+  --radius: 0rem;
+}
+
+@theme {
+  /* The Figma frame width. Table columns use the exact design widths from here up. */
+  --breakpoint-wide: 90rem;
+}
+
+@theme inline {
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-hedvig), ui-serif, Georgia, serif;
+
+  /* shadcn */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+
+  /* theme tokens */
+  --color-bg-base: var(--bg-base);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-muted: var(--bg-muted);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-head: var(--text-head);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-disabled: var(--text-disabled);
+  --color-text-inverse: var(--text-inverse);
+  --color-fill-inverse: var(--fill-inverse);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-subtle: var(--brand-subtle);
+  --color-brand-text: var(--brand-text);
+  --color-brand-on: var(--brand-on);
+  --color-success-bg: var(--success-bg);
+  --color-success-dot: var(--success-dot);
+  --color-success-text: var(--success-text);
+  --color-success-strong: var(--success-strong);
+  --color-hold-bg: var(--hold-bg);
+  --color-hold-dot: var(--hold-dot);
+  --color-hold-text: var(--hold-text);
+  --color-hold-strong: var(--hold-strong);
+  --color-hold-on-strong: var(--hold-on-strong);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-dot: var(--danger-dot);
+  --color-danger-text: var(--danger-text);
+  --color-info-bg: var(--info-bg);
+  --color-info-dot: var(--info-dot);
+  --color-info-text: var(--info-text);
+  --color-info-strong: var(--info-strong);
+  --color-overlay: var(--overlay);
+}
+
+/* ------------------------------------------------------------------ */
+/* Text styles                                                         */
+/* ------------------------------------------------------------------ */
+@utility text-display-large {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.2;
+}
+@utility text-display-medium {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1.2;
+}
+@utility text-heading-large {
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.25;
+}
+@utility text-heading-medium {
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.4;
+}
+@utility text-heading-small {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+}
+@utility text-body-medium {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.45;
+}
+@utility text-body-medium-strong {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.45;
+}
+@utility text-body-small {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4;
+}
+@utility text-body-small-strong {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.4;
+}
+@utility text-label-xsmall-strong {
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@layer base {
+  * {
+    @apply border-border-default outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-bg-base text-text-primary antialiased;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  :focus-visible {
+    outline: 2px solid var(--text-primary);
+    outline-offset: 2px;
+  }
+}
+
+@keyframes push-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
