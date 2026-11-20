@@ -1,190 +1,96 @@
-# Raven Payouts: hold prototype (build spec for Claude Code)
+# Raven Payouts: hold prototype
 
 ## What this is
 
-A working web prototype for a take-home exercise about **one moment: a merchant in the first 24 hours after her payouts are put on hold.**
+A working web prototype about **one moment: a merchant in the first 24 hours after her payouts are put on hold.**
 
-Raven is a made-up payments processor. The merchant is Tolu Adeyemi, owner of Tolu Atelier, a clothing brand in Lagos. Her Black Friday sales jumped about 10x, the system flagged it, and her payouts were paused on Fri, 27 Nov 2026 at 3:12pm. It's a false alarm: the sales are real. Salaries and a supplier are due Mon, 30 Nov.
+Raven is a made-up payments processor. Tolu Adeyemi runs Tolu Atelier, a clothing brand in Lagos. Her Black Friday sales jumped, the system flagged it, and her payouts were paused on Fri, 27 Nov 2026 at 3:12pm. It's a false alarm. Salaries and a supplier are due Mon, 30 Nov.
 
-**Main idea: Raven does the review.** By default she has nothing to do. Raven promises a date for the next update (within 24 hrs of the hold), shown in hours, not a date, not a release date. She can add context if she knows of anything that explains it, (Raven asking for more information is out of scope for this prototype).
+**Main idea: Raven does the review.** By default she has nothing to do. Raven promises an update within 24 hrs, not a release. She can add context if she knows what explains the activity.
 
 The prototype covers:
-1. The hold starts and she finds out (push, SMS, email, in-app banner), all saying the same thing
-2. She opens the details: what's on hold, why, progress, what happens next
+1. The hold starts and she finds out (push, SMS, email, banner), all saying the same thing
+2. She opens the details: what's on hold, why, progress
 3. Optionally, she tells Raven what happened ("Expected this activity?")
 4. Raven clears the hold
 
-Out of scope: Raven asking her for more information or documents (an information-required state). Removed from the prototype.
+It must work on desktop and on her phone, and let a presenter move through each step live.
 
-It must feel like a real app on desktop and on her phone, and let the presenter move through each step live.
+Design: Figma file `L50Kr8t31v51771stuErq0`. Its tokens are the source of truth; its screens are partly outdated, so this spec wins on behaviour and copy.
 
-Design source of truth: Figma file `L50Kr8t31v51771stuErq0` (use the Figma MCP to read nodes). Where Figma and this spec disagree, follow Figma for visuals and this spec for behaviour and copy.
+### Copy rules
 
-Copy rules: no em dashes anywhere. **Never hint at what the unusual activity was** (no "sales went up", "increase", "spike"): the app only ever says "unusual activity" or "recent activity on your account". Use concrete timings ("within 24 hrs"); updates are promised in hours, never as a date. Live surfaces (banner, timeline) count down to 24 hrs after the hold (day two at 9:30am shows "within 6 hrs"), never above 24 hrs and only once a hold is placed; the alerts always say "within 24 hrs", never "one working day". Dates use the Nigerian format, e.g. "Fri, 27 Nov 2026". Never show an exact payout time. Don't apologise for the hold.
+- No em dashes.
+- **Never hint at what the activity was** (no "sales went up", "increase", "spike"). Only "unusual activity" or "recent activity on your account".
+- The activity is under review, not the payouts: "Payouts paused", never "payouts under review".
+- Updates are promised in hours, never as a date. Banner and timeline count down from 24 hrs (never above 24, only while a hold is on); alerts always say "within 24 hrs".
+- Dates: "Fri, 27 Nov 2026". Never show a payout time. Don't apologise for the hold.
 
 ---
 
 ## Stack
 
-- Next.js (App Router) + TypeScript
-- Tailwind CSS, configured to read the CSS variables below (no raw hex values in components)
-- **shadcn/ui as the component base**, restyled to match Figma: `button`, `badge`, `table`, `sheet`, `dialog`, `textarea`, `label`, `tooltip`, `dropdown-menu`, `sonner`, `skeleton`, `separator`, `avatar`.
-- Zustand for prototype state
-- Fonts from Google Fonts via `next/font`: **Instrument Sans** (400, 500) and **Hedvig Letters Serif** (400)
-- Icons: lucide-react, stroke width 1.75
-- Deploy on Vercel
-
-Single app. No backend. All data is local fixtures.
+Next.js (App Router) + TypeScript, Tailwind CSS v4, shadcn/ui restyled to the design, Zustand, lucide-react icons (stroke 1.75). Fonts via `next/font`: Instrument Sans (400, 500), Hedvig Letters Serif (400). No backend; all data is local fixtures.
 
 ---
 
 ## Design tokens
 
-The Figma file's variables are the source of truth; `app/globals.css` mirrors them one to one. Two collections: **Primitives** (raw values, one mode, never used directly in components) and **Theme** (what components use, Light and Dark modes). Theme names follow `color/{bg,border,text,icon}/<name>`; in CSS that is `--bg-default`, `--text-primary` and so on, and in Tailwind `bg-bg-default`, `text-text-primary`, `border-border-default`, `bg-icon-success`.
+`app/globals.css` mirrors the Figma variables. Two layers:
 
-### Primitives
+- **Primitives**: raw values (gray, purple, green, orange, blue, red scales; spacing; radius; font sizes and families). Never used directly in components.
+- **Theme** (Light and Dark): what components use, named `color/{bg,border,text,icon}/<name>`. In code: `--bg-default` → `bg-bg-default`, `--text-primary` → `text-text-primary`, `--icon-success` → `bg-icon-success`.
 
-```css
-/* color/gray */   0 #FFFFFF  50 #F7F8FA  100 #F0F2F5  150 #E8EBEF  200 #E1E4E9  300 #CFD3DA  400 #A3A9B4
-                   500 #858C98  600 #626976  700 #3A3F48  800 #24272E  850 #1C1F24  900 #15171B  950 #0C0D10
-/* color/purple */ 50 #F3F0FD  100 #EBE6FC  200 #D7CEF9  300 #B4A6FF  400 #9C8BF5  500 #8E7CF0  600 #6E56CF  700 #5B44C2  800 #3D2E86  900 #221C3D
-/* color/green */  100 #DDF1E4  300 #3DDC97  500 #00C969  700 #00804F  900 #0F2A1C
-/* color/orange */ 100 #FFEDD5  300 #FB9A5A  500 #F97316  700 #B4500A  900 #2E1D0E
-/* color/blue */   100 #DDEBFF  300 #6EA8FE  500 #1F6FEB  700 #1A5FCC  900 #10213D
-/* color/red */    100 #FEE4E2  300 #FDA29B  500 #F04438  600 #D92D20  700 #B42318  900 #3A1412
-```
-
-Also in Primitives: `spacing/*` (0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 64), `radius/*` (none 0, sm 4, md 8, full 999), `font/size/*` (11, 12, 14, 16, 18, 24, 28, 36), `font/family/sans` Instrument Sans, `font/family/serif` Hedvig Letters Serif.
-
-### Theme (Light / Dark)
-
-| Token | Light | Dark |
-|---|---|---|
-| `bg/default` · `subtle` · `muted` · `emphasis` | gray-0 · 50 · 100 · 150 | gray-950 · 900 · 850 · 800 |
-| `bg/inverse` | gray-900 | gray-50 |
-| `bg/overlay` (used at 40% opacity) | gray-950 | gray-950 |
-| `bg/success-subtle` · `bg/success` | green-100 · green-700 | green-900 · green-700 |
-| `bg/critical-subtle` · `bg/critical` | red-100 · red-600 | red-900 · red-600 |
-| `bg/info-subtle` · `bg/info` | blue-100 · blue-500 | blue-900 · blue-500 |
-| `border/default` · `strong` · `selected` | gray-200 · 300 · 200 | gray-800 · 700 · 800 |
-| `border/focus` | blue-500 | blue-300 |
-| `border/info` · `success` · `critical` | blue-300 · green-300 · red-300 | blue-700 · green-700 · red-700 |
-| `text/primary` · `secondary` · `tertiary` · `disabled` · `inverse` | gray-950 · 600 · 500 · 300 · 0 | gray-50 · 400 · 500 · 700 · 950 |
-| `text/success` · `critical` · `info` | green-700 · red-700 · blue-700 | green-300 · red-300 · blue-300 |
-| `text/on-critical` · `icon/on-critical` | gray-0 | gray-0 |
-| `icon/primary` · `secondary` · `tertiary` · `disabled` · `inverse` · `neutral` | gray-950 · 600 · 500 · 300 · 0 · 500 | gray-50 · 400 · 500 · 700 · 950 · 500 |
-| `icon/success` · `critical` · `info` | green-500 · red-500 · blue-500 | same |
-
-**Not in Figma yet (code only):** a `warning` family for the Pending status, built from the orange primitives in the same pattern: `bg/warning-subtle` (orange-100 / 900), `text/warning` (orange-700 / 300), `icon/warning` (orange-500), `border/warning` (orange-300 / 700).
-
-Usage: status dots and icons use `icon/*`; tinted pills use `bg/*-subtle` with `text/*`; filled banners use `bg/critical` or `bg/success` with `text/on-critical`; primary buttons use `bg/inverse` with `text/inverse`; focus rings use `border/focus`. Components use theme tokens only; icons only use `icon/*` tokens.
-
-Dark mode: `class="dark"` on `<html>`. Theme follows the system by default; the header theme switcher and the demo controls can force light or dark.
-
-### Mapping to shadcn variables
-
-| shadcn variable | Theme token |
+| Group | Tokens |
 |---|---|
-| `--background`, `--card`, `--popover` | `bg/default` |
-| `--foreground`, `--card-foreground`, `--popover-foreground` | `text/primary` |
-| `--primary` / `--primary-foreground` | `bg/inverse` / `text/inverse` |
-| `--secondary`, `--muted`, `--accent` | `bg/subtle` |
-| `--secondary-foreground`, `--accent-foreground` | `text/primary` |
-| `--muted-foreground` | `text/secondary` |
-| `--border`, `--input` | `border/default` |
-| `--ring` | `border/focus` |
-| `--destructive` | `bg/critical` |
-| `--radius` | `0rem` |
+| bg | default, subtle, muted, emphasis, inverse, overlay (used at 40%), success-subtle, success, critical-subtle, critical, info-subtle, info |
+| border | default, strong, selected, focus, info, success, critical |
+| text | primary, secondary, tertiary, disabled, inverse, success, critical, info, on-critical |
+| icon | primary, secondary, tertiary, disabled, inverse, neutral, success, critical, info, on-critical |
 
-### Spacing and radius
+**Code only (not in Figma yet):** a `warning` family from the orange primitives for Pending: `bg/warning-subtle`, `text/warning`, `icon/warning`, `border/warning`.
 
-- Spacing scale (px): 0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 64. Use only these.
-- Radius: `none` 0, `sm` 4, `md` 8, `full` 999.
-- Cards, tables, inputs, buttons, banners, drawer, modals: **square** (radius 0).
-- Fully round: status pills, status icons, timeline markers, bell button, user avatar.
+Usage: dots and icons use `icon/*`; tinted pills use `bg/*-subtle` + `text/*`; filled banners use `bg/critical` or `bg/success` + `text/on-critical`; primary buttons use `bg/inverse` + `text/inverse`; focus rings use `border/focus`. Components use Theme tokens only.
 
-### Text styles (Figma)
+Radius 0 everywhere except pills, status icons, timeline markers, bell and avatar (fully round). Dark mode via `class="dark"`; follows the system by default.
+
+### Text styles
 
 | Style | Font | Size / line height |
 |---|---|---|
-| Display/Large | Hedvig Letters Serif 400 | 36 / 120% |
-| Display/Medium | Hedvig Letters Serif 400 | 28 / 120% |
-| Display/Small | Hedvig Letters Serif 400 | 24 / 125% |
-| Heading/Large | Instrument Sans 400 | 24 / 125% |
-| Heading/Medium *(code only, not in Figma yet)* | Instrument Sans 500 | 18 / 140% |
-| Heading/Small | Instrument Sans 500 | 16 / 140% |
-| Body/Large | Instrument Sans 400 | 16 / 145% |
-| Body/Medium | Instrument Sans 400 | 14 / 145% |
-| Body/Medium Strong | Instrument Sans 500 | 14 / 145% |
-| Body/Small | Instrument Sans 400 | 12 / 140% |
-| Body/Small Strong | Instrument Sans 500 | 12 / 140% |
-| Label/XSmall | Instrument Sans 400 | 11 / 140% |
-| Label/XSmall Strong | Instrument Sans 500 | 11 / 140% |
-
-In code: `text-display-large`, `text-display-small`, `text-body-large`, `text-label-xsmall`, etc. Make sure the naira sign (₦) renders in both fonts.
+| Display/Large · Medium · Small | Hedvig Letters Serif 400 | 36/120% · 28/120% · 24/125% |
+| Heading/Large | Instrument Sans 400 | 24/125% |
+| Heading/Medium *(code only)* | Instrument Sans 500 | 18/140% |
+| Heading/Small | Instrument Sans 500 | 16/140% |
+| Body/Large | Instrument Sans 400 | 16/145% |
+| Body/Medium · Medium Strong | Instrument Sans 400 · 500 | 14/145% |
+| Body/Small · Small Strong | Instrument Sans 400 · 500 | 12/140% |
+| Label/XSmall · XSmall Strong | Instrument Sans 400 · 500 | 11/140% |
 
 ---
 
-## Components
+## Colour by status
 
-Build each once and reuse. Names match Figma.
-
-| Component | Base |
-|---|---|
-| Button | shadcn `button` (default = primary, outline, ghost; sizes md 36px / sm 32px; optional leading and trailing icon) |
-| StatusPill | shadcn `badge`: paid (green), on-hold (red), pending (orange, warning tokens). Dot plus text, never colour alone |
-| SummaryCard | custom: title on top, value, then a plain secondary sentence, not clickable |
-| Banner | custom, one component on every page (see Banner) |
-| PayoutsTable | shadcn `table` from 768px up (Recipient hidden below 1024px), a list below it. No row menu: an On hold row opens the drawer on click. Hovering a Reference cell (Paid rows) reveals a small round copy button at its right edge (also shown on keyboard focus, and always on touch screens); copying shows "Reference copied" and the icon briefly turns into a check. Proportional columns, all left-aligned |
-| Review drawer | shadcn `sheet`: right side, 480px from 768px up, full-screen sheet below. Sticky header (title, close), scrolling body, sticky footer. Overlay `--overlay` with a slight blur |
-| ReviewTimeline | custom vertical timeline with connected markers |
-| Context form, file upload | `textarea`, `label`, native radios in a `fieldset`; shared drop zone and file rows |
-| Sidebar | custom: 240px from 1280px, icon rail 768 to 1279px, hidden below 768px behind a header menu button (left sheet) |
-| Header | custom: menu button (mobile), "Find anything..." search (768px up), theme switcher, bell with unread dot (blue), avatar |
-| Alerts preview | shadcn `dialog`, full screen on mobile |
-| Push notification, Toast | custom card top right; `sonner` |
-
----
-
-## Routes
-
-- `/`: Home dashboard (volume chart, balance snapshot, overview cards).
-- `/payouts`: Payouts page.
-- `?hold=open` on either page opens the review drawer. Every alert links to `/payouts?hold=open`.
-- `/inbox`, `/inbox/[id]`: a simple made-up mail view (not imitating any real email brand). The email is real email-safe HTML.
-
-The banner and drawer live in the shared app shell, so they behave the same on every signed-in page.
+- **Red**: On hold (pill, and the banner while on hold). Also errors.
+- **Orange**: Pending.
+- **Green**: Paid, and the resumed banner.
+- **Blue**: charts (current period), Refunded, the current timeline step.
 
 ---
 
 ## Money model
 
-Use these terms the same way everywhere:
+- **Payout**: one day's sales, paid automatically on the next working day. Never combined across days; no payout for the current day.
+- **On hold**: a payout that would normally go out but is paused. New sales keep coming in and pay out after the review.
+- **Payout balance** equals the total of the On hold rows (Pending rows when there's no hold). Every amount on screen must agree.
 
-- **Payout balance**: money from sales that hasn't been paid out yet.
-- **Payout**: a transfer to her bank for **one day's sales**, paid automatically on the next working day. Payouts are never summed across days, so each one reconciles to exactly one day of sales. Fri, Sat and Sun sales are three separate payouts, all on Monday.
-- **On hold**: a payout that would normally go out but is paused.
+At the hold, Friday's payout (₦3,457,350.00) is On hold; earlier days are Paid. After **Next day** (Sat) there's still only Friday's payout, and its amount doesn't change.
 
-What a hold does: payouts stop and her payout balance keeps growing. Nothing leaves her balance. Sales she makes during the hold join the balance and pay out once the review ends.
-
-At the time of the hold:
-- Thu, 26 Nov sales (₦339,825.00) were paid out Fri morning. Paid, not affected.
-- Fri, 27 Nov sales (₦3,457,350.00 so far) were due to pay out Mon, 30 Nov. That payout is On hold.
-- Each day's sales are their own payout, made on the next working day. Payouts are never combined, and there is no payout for the current day: on Sat, 28 Nov only Friday's payout exists (Saturday's sales become a payout once the day is over). Friday's payout stays ₦3,457,350.00.
-
-Sales figures (one source, `salesFor(day, now)` in `lib/proto.ts`, used by Payouts and the Home chart):
-
-| Sales day | So far (that day) | Final |
-|---|---|---|
-| Fri, 27 Nov | ₦3,457,350.00 | ₦3,457,350.00 (fixed) |
-| Sat, 28 Nov | ₦586,500.00 | ₦3,120,000.00 |
-| Thu 26 to Fri 20 Nov | | ₦339,825.00, ₦369,375.00, ₦325,050.00, ₦354,600.00, ₦221,625.00, ₦369,375.00, ₦443,250.00 |
-
-Payouts table (newest first): **one row per sales day**. Columns: Payout for (the sales day), Status, Amount, Recipient, Reference. No actions menu. The payout date isn't a column; each day's payout goes out on the next working day.
+Payouts table, newest first, one row per day. Columns: Payout for, Status, Amount, Recipient (`GTBank •••• 4821`), Reference (only once Paid, otherwise "-"):
 
 | Payout for | Amount | Status | Reference |
 |---|---|---|---|
-| Fri, 27 Nov 2026 | ₦3,457,350.00 (unchanged after Next day) | On hold while held, otherwise Pending | - |
+| Fri, 27 Nov 2026 | ₦3,457,350.00 | On hold (Pending without a hold) | - |
 | Thu, 26 Nov 2026 | ₦339,825.00 | Paid | PO-261127-0487 |
 | Wed, 25 Nov 2026 | ₦369,375.00 | Paid | PO-261126-0451 |
 | Tue, 24 Nov 2026 | ₦325,050.00 | Paid | PO-261125-0419 |
@@ -193,187 +99,95 @@ Payouts table (newest first): **one row per sales day**. Columns: Payout for (th
 | Sat, 21 Nov 2026 | ₦369,375.00 | Paid | PO-261123-0351 |
 | Fri, 20 Nov 2026 | ₦443,250.00 | Paid | PO-261123-0350 |
 
-Rules:
-- **Payout balance equals the total of the On hold rows** (Pending rows when there is no hold). Every amount on screen must agree.
-- Recipient on every row: `GTBank •••• 4821`. Hold reference: `HLD-261127-0412`.
-- A reference exists only once a payout is sent (Paid). Otherwise show "-".
+Hold reference: `HLD-261127-0412`. All screens derive from one store (`lib/store.ts`) through `derive()` in `lib/proto.ts`; nothing is hard-coded per screen.
 
 ---
 
-## Prototype state
+## Screens
 
-One Zustand store (`lib/store.ts`), persisted to `localStorage`. Banner, cards, rows, drawer and the Home chart are all derived from it by `derive()` in `lib/proto.ts`. Never hard-code per-screen copies.
+Routes: `/` Home, `/payouts` Payouts, `/inbox` (made-up mail view). `?hold=open` opens the drawer on any page; every alert links to `/payouts?hold=open`. Sidebar, header, banner and drawer live in a shared shell; header and banner stay pinned while scrolling.
 
-```ts
-type HoldState =
-  | 'none'          // before the hold
-  | 'paused'        // under review: Raven is doing the work, no action needed
-  | 'resumed';      // hold cleared
+### Payouts
 
-interface ProtoState {
-  now: string;                    // simulated date and time
-  hold: HoldState;
-  drawerOpen: boolean;
-  drawerView: 'summary' | 'support';
-  form: { choice; note; files };   // the context form
-  context: ContextNote | null;    // what she volunteered ("Expected this activity?")
-  notifications; emails; theme;
-  simulateUploadError: boolean;
-  simulateSendError: boolean;
-}
-```
+Title, the **Next payout** card (full width), toolbar ("Last 30 days", "Status: All", Export), payouts table.
 
-Sending context does **not** change `hold`, the banner, the cards or the update date.
+- **Next payout card**: title "Next payout", the amount, then a plain grey sentence: "You have 1 payout on hold" / "You have 1 pending payout, due Mon, 30 Nov 2026" / "You have no pending payouts". Not clickable.
+- **Table**: no row menu; an On hold row opens the drawer. Hovering a Paid reference shows a round copy button ("Reference copied").
 
----
+### Home
 
-## Colour rule
+Title with a "Last 30 days" dropdown, then one grid: Gross volume (2 columns × 2 rows) beside Next payout and Payments; then Successful payments, Average order value, New customers. Charts: current period blue, previous light grey, dashed average and grid, legend "Current / Previous / Average", change as grey text ("+29.9% vs previous period"). Payments breakdown: Succeeded green, Refunded blue, Failed red.
 
-Colour follows the payout status, and the banner matches it:
+### Banner
 
-- **Red: On hold.** The On hold pill, and the banner while payouts are on hold (always filled solid red, never a tint). Failed uploads and sends also use the danger colours.
-- **Orange (warning): Pending.** The Pending pill on a payout that is due and not on hold (replaces "Scheduled").
-- **Green:** Paid, and the resumed banner.
-- Blue is only used for the current step on the review timeline.
-
----
-
-## Home and Payouts
-
-Payouts page: title "Payouts", the Next payout card (full width), toolbar ("Last 30 days", "Status: All", Export), payouts table. Home: title "Home" with a "Last 30 days" outline dropdown (7 / 30 / 90 days), then one grid of cards with no section headings (3 columns wide: Gross volume spanning 2 columns and 2 rows beside Next payout and Payments; then Successful payments, Average order value, New customers. Recent payments and Top customers are hidden). Chart style: current period in brand blue (the only chart colour), previous period in light grey, dashed average line, dashed grid, square-swatch legend "Current / Previous / Average", the change shown as plain grey text after the value ("+29.9% vs previous period"), payment breakdown and payment pills use status colours that match each other (Succeeded green, Refunded blue, Failed red), no card footers. Both pages show the banner.
-
-One summary card, **Next payout** (it replaces the separate Payout balance and Next payout cards):
-
-- Title: "Next payout"
-- Value: the amount of the next payout, i.e. the payout balance (e.g. ₦3,457,350.00, unchanged after Next day)
-- Under the value, a plain secondary sentence (no colour, not a badge), counting the payouts:
-  - On hold: "You have 1 payout on hold" (still 1 after Next day; it counts past sales days only)
-  - No hold: "You have 1 pending payout, due Mon, 30 Nov 2026" (the due date only when not on hold)
-  - Nothing due: "You have no pending payouts"
-
-The card is not clickable. While a hold is on, the banner link and the On hold rows open the drawer.
-
----
-
-## Banner
-
-One component on Home and Payouts, under the header. The header and banner are pinned together at the top while the page scrolls. `role="status"`. Always a filled colour (white text), never a subtle tint. Text wraps on narrow screens and the link always stays visible. Links are underlined; on hover (mouse only) the underline sweeps out to the right and back in from the left (transform only, about 560ms), it never disappears or thickens.
+Filled colour, white text, `role="status"`. Wraps on narrow screens; the link stays visible. Link underline sweeps out and back in on hover (mouse only).
 
 | State | Colour | Text | Link |
 |---|---|---|---|
-| paused, day one | solid red | Payouts paused while we review recent activity on your account. No action needed. We'll update you within 24 hrs. | View details |
-| paused, from the next day | solid red | Payouts paused since Fri, 27 Nov 2026. We're still reviewing. We'll update you within 6 hrs. | View details |
-| resumed | solid green | Payouts resumed. Your next payout goes out on Mon, 30 Nov 2026. | Dismiss (x) |
+| Paused, day one | red | Payouts paused while we review recent activity on your account. No action needed. We'll update you within 24 hrs. | View details |
+| Paused, next day | red | Payouts paused since Fri, 27 Nov 2026. We're still reviewing. We'll update you within 6 hrs. | View details |
+| Resumed | green | Payouts resumed. Your next payout goes out on Mon, 30 Nov 2026. | Dismiss (x) |
 
-Every link opens the review drawer.
+### Review drawer
 
----
+Right side, 480px (full-screen sheet on mobile). Sticky header and footer. Traps focus, Esc closes, focus returns to the opener.
 
-## Review drawer (under review)
+1. **Title**: "Payouts paused"
+2. **Money**: "₦3,457,350.00 on hold", then "1 payout, for Fri, 27 Nov" (with more days: "5 payouts, for Fri, 27 Nov to Tue, 1 Dec"), then "You can keep accepting payments as usual, and new sales are paid out after the review."
+3. **Details**: Paused since Fri, 27 Nov 2026, 3:12pm · Reason: Unusual activity on your account · Reference: HLD-261127-0412
+4. **Progress**: Payouts paused (done) → You added context (done, only after she sends it) → Reviewing account activity (current, blue ring with a soft ripple) → Next update, Within 24 hrs (upcoming). Solid connector up to the current step, dotted after.
+5. **Expected this activity?** (below)
+6. **Footer**: "Contact support" opens her email app pre-filled (to support@raven.ng, subject and body with the reference); "Close".
 
-Order, top to bottom:
+When the hold is lifted the drawer shows "Hold lifted": the balance, the lift date and the next payout date.
 
-1. **Title**: "Payouts paused". The account activity is under review, never the payouts: copy never says "payouts under review" or "paused for review".
-2. **Money**: "₦3,457,350.00 on hold" (the payout balance). Below: the count and the first to last day, which reads the same however long the hold lasts: "1 payout, for Fri, 27 Nov"; after Next day it is still "1 payout, for Fri, 27 Nov" (no payout for the current day); after five days it would be "5 payouts, for Fri, 27 Nov to Tue, 1 Dec". No due date: a held payout isn't due until the review ends. Below that, the only "what happens next" line: "You can keep accepting payments as usual, and new sales are paid out after the review."
-3. **Details**: Paused since "Fri, 27 Nov 2026, 3:12pm" (the hold time, not a payout time). Reason "Unusual activity on your account". Reference "HLD-261127-0412".
-4. **Progress timeline** (vertical, connected markers; the connector is solid up to the current step and dotted after it, with clearly spaced dots):
-   - Payouts paused: Fri, 27 Nov, 3:12pm (done: filled marker with a check)
-   - You added context: time (done; only after she sends context)
-   - Reviewing account activity: "We're checking recent activity on your account" (current: blue ring with a dot and a soft one-way ripple every 2.4s, transform and opacity only, none with reduced motion)
-   - Next update: Within 24 hrs (upcoming: empty marker). Never "Decision".
-5. **Expected this activity?** (see below)
-6. **Footer**: "Contact support" (ghost) left, "Close" (outline) right. Contact support is a `mailto:` link that opens her email app with the recipient (support@raven.ng), subject "Paused payouts (HLD-261127-0412)" and a short body including the reference pre-filled. It doesn't open anything inside the app. The email's "Contact support" link does the same.
+### Expected this activity?
 
-Keyboard: the drawer traps focus, Esc closes it, focus returns to whatever opened it (banner link, card, row).
+Her way to say the hold is a mistake without disputing it. Optional; changes nothing about her status.
 
-### Expected this activity? (the mistake path)
+- In the drawer: "If something recent explains the activity on your account, you can tell us." and a "Tell us what happened" button.
+- The button opens a **modal over the drawer**: required radios "What might explain it?" (A promotion or campaign, A new product or service, A change to how I sell, Something else), optional "Anything else we should know?", optional Attachments upload. Cancel and Submit (disabled until a reason is picked).
+- On Submit the modal closes, toast "Sent. We've added this to your review.", and the drawer shows "You told us: …" with the time, note and files, plus the "You added context" timeline step.
+- On failure: keep what she typed and show "Couldn't send. Try again."
 
-How she says "this hold is a mistake" without disputing it. Optional. It doesn't change her status, doesn't turn anything red and doesn't promise a faster release.
+### Alerts
 
-- Heading "Expected this activity?". Body "If something recent explains the activity on your account, you can tell us." Button "Tell us what happened" (outline).
-- The button opens the form as a modal on top of the drawer (focus moves to the first option; Esc, Cancel or X closes it and returns focus to the button):
-  - Required radio group "What might explain it?": A promotion or campaign, A new product or service, A change to how I sell, Something else
-  - Optional textarea "Anything else we should know?"
-  - Optional "Attachments" upload (same upload component and states as everywhere). No link field
-  - Cancel, "Submit" (disabled until a reason is picked)
-- After Submit: the modal closes, toast "Sent. We've added this to your review."; in the drawer the section becomes a read-only summary "You told us: A promotion or campaign" with the time sent, the note and any attachments; the timeline gets "You added context". Banner, cards and update date stay the same.
-- "Simulate submit failure": keep what she typed and show "Couldn't send. Try again."
+Same message as the day-one banner. **No amount**: lock screens show them.
 
-### Hold lifted
+- **Push**: "Payouts paused" / "We're reviewing recent activity on your account. No action needed. We'll update you within 24 hrs."
+- **SMS** (≤160 characters): "Raven: Payouts paused while we review recent activity on your account. No action needed. We'll update you within 24 hrs. raven.ng/h/HLD-261127-0412"
+- **Email**: subject "Your payouts are paused", same message, the reference and a "View details" button. Black on white.
 
-Drawer title "Hold lifted": the balance, "Payout pending", hold lifted date, next payout date. No form.
+Each opens `/payouts?hold=open` with the drawer open.
 
----
+### Mobile (below 768px)
 
-## Alerts
-
-Same message as the day-one banner. **No amount, nothing sensitive**: lock screens show them.
-
-- **Push**: title "Payouts paused", body "We're reviewing recent activity on your account. No action needed. We'll update you within 24 hrs."
-- **SMS** (147 characters, fits one 160-character SMS): "Raven: Payouts paused while we review recent activity on your account. No action needed. We'll update you within 24 hrs. raven.ng/h/HLD-261127-0412"
-- **Email**: subject "Your payouts are paused". Body says the same thing, plus the reference and a "View details" button. Black text on white, one black button.
-- Tapping any of them opens `/payouts?hold=open`: banner visible, drawer open.
-
-
-### Alerts preview
-
-"Show alerts" in the demo controls opens a panel with the three alerts as she'd see them: push on a phone lock screen, SMS in a messages thread, and the email. Each has "Open", which goes to `/payouts?hold=open` with the drawer open.
-
----
-
-## Mobile (below 768px)
-
-- Sidebar hidden behind a menu button in the header (left sheet; closes after navigating).
-- Banner text wraps; the link stays visible.
-- Summary cards stack.
-- Payouts table becomes a grouped list in the same style as the table and cards (each group a square bordered container with lines between rows): sections "Upcoming" (On hold and Pending) and "Paid". Each row: a round status icon on a tinted background (Paid: check, green; On hold: pause, red; Pending: clock, orange), the amount with "Status • reference" under it (reference only once paid), and the "Payout for" date on the right without the weekday (e.g. "27 Nov 2026"). On hold rows open the drawer.
-- The drawer is a full-screen sheet with a sticky header and footer.
-- Checked at 390px wide with the drawer open, light and dark. No horizontal scroll.
+- Sidebar behind a header menu button.
+- Payouts table becomes a grouped list ("Upcoming", "Paid") in bordered containers. Each row: round status icon (Paid check green, On hold pause red, Pending clock orange), amount with "Status • reference", date on the right without the weekday ("27 Nov 2026").
+- Cards stack; the drawer is full screen. No horizontal scroll at 390px.
 
 ---
 
 ## Demo controls
 
-A small floating panel, hidden by default, toggled with `Shift + D` (ignored while typing). Not part of the product.
+Hidden panel, toggled with `Shift + D`. Not part of the product.
 
-- **Place hold**: now = Fri, 27 Nov 2026, 3:12pm; fires push, email and notification; banner day one
-- **Clear hold**: acts as the reviewer; now = Sat, 28 Nov 2026, 10:05am (or later); hold resumed
-- **Next day**: now = Sat, 28 Nov 2026, 9:30am with the hold still on; day-two banner. No new payout row (Saturday is the current day), balance stays ₦3,457,350.00
-- **Show alerts**: the alerts preview
-- Theme (system, light, dark), simulate upload failure, simulate submit failure
-- **Reset**: back to none, Fri, 27 Nov 2026, 3:00pm
+- **Place hold**: Fri, 27 Nov 2026, 3:12pm; fires push, email and notification
+- **Clear hold**: acts as the reviewer; hold resumed
+- **Next day**: Sat, 28 Nov 2026, 9:30am, hold still on; day-two banner
+- **Show alerts**: push on a lock screen, SMS thread and email, each with "Open"
+- Theme, simulate upload failure, simulate submit failure, **Reset**
 
-Demo script:
-1. Normal Home and Payouts, Friday afternoon
-2. Place hold: push, bell dot, solid red banner, Next payout card On hold. Show alerts: push, SMS, email; Open one
-3. Drawer: what's on hold, progress, what happens next. Nothing to do
-4. "Tell us what happened": pick a reason, add a note, send. Timeline updates, nothing else changes
-5. Next day: day-two banner; still one payout on hold (no payout for the current day)
-6. Clear hold: green banner, the held payouts go back to Pending
+Demo script: normal Home and Payouts → Place hold (alerts, red banner, card On hold) → open the drawer → "Tell us what happened" → Next day → Clear hold (green banner, payout back to Pending).
 
 ---
 
 ## Quality bar
 
-- Every surface tells the same story: banner, both cards, the table row, the drawer and all three alerts
-- Payout balance equals the On hold rows
-- No amount in any alert
-- Colour follows status: On hold red (banner too), Pending orange, Paid green
-- Keyboard: drawer traps focus, Esc closes it, focus returns to the opener; forms fully usable by keyboard and labelled for screen readers
-- Screen readers: banner is `role="status"`, drawer is a labelled dialog, timeline steps announce done / in progress / upcoming, status pills have text
-- Light and dark; desktop (1024 to 1440px) and 390px mobile; no horizontal scroll
-- No em dashes in copy
+- Banner, card, table, drawer and alerts tell the same story; the balance equals the On hold rows.
+- Keyboard and screen reader friendly: focus trapped in the drawer and modal, labelled forms, timeline steps announce done / in progress / upcoming, pills have text.
+- Light and dark; 1024 to 1440px and 390px mobile.
 
 ## Out of scope
 
-- Raven asking for more information or documents (information-required state)
-- Anything after the first review: reminders, holds that stay, a "continue restriction" outcome, several days on hold
-- Failed payouts
-- Other hold reasons (refunds, missing documents, bank change)
-- The internal reviewer tool (the demo controls stand in for it)
-- Instant or early payouts
-- Real email or SMS sending, real support messaging
-
-## Deploy
-
-GitHub `AbimbolaPelumi/raven` (private), deployed on Vercel. Production builds use webpack (`next build`); Turbopack is used for `next dev` only.
+Raven asking for more information or documents; anything after the first review (reminders, holds that stay); failed payouts; other hold reasons; the reviewer tool (the demo controls stand in for it); instant payouts; real email, SMS or support messaging.
