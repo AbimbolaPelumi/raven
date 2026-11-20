@@ -26,7 +26,7 @@ export function OverviewCard({
   return (
     <section
       aria-label={title}
-      className={cn("flex min-w-0 flex-col border border-border-default bg-bg-base", className)}
+      className={cn("flex min-w-0 flex-col border border-border-default bg-bg-default", className)}
     >
       <div className="flex flex-1 flex-col gap-3 p-6">
         <h3 className="text-body-medium text-text-secondary">{title}</h3>

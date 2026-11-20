@@ -30,12 +30,12 @@ function SheetContent({
     <SheetPrimitive.Portal>
       <SheetPrimitive.Overlay
         data-slot="sheet-overlay"
-        className="fixed inset-0 z-50 bg-overlay backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0"
+        className="fixed inset-0 z-50 bg-bg-overlay/40 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0"
       />
       <SheetPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "fixed z-50 flex flex-col bg-bg-base shadow-[0_16px_48px_rgba(0,0,0,0.18)] transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:animate-in data-[state=open]:duration-300",
+          "fixed z-50 flex flex-col bg-bg-default shadow-[0_16px_48px_rgba(0,0,0,0.18)] transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:animate-in data-[state=open]:duration-300",
           side === "right" &&
             "inset-0 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right md:inset-y-0 md:right-0 md:left-auto md:w-[480px] md:border-l md:border-border-default",
           side === "left" &&

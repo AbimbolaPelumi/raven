@@ -144,7 +144,7 @@ export function ContextSection() {
                     <label
                       key={c}
                       className={cn(
-                        "flex cursor-pointer items-center gap-3 border px-3 py-2.5 text-body-medium text-text-primary transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-text-primary",
+                        "flex cursor-pointer items-center gap-3 border px-3 py-2.5 text-body-medium text-text-primary transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-border-focus",
                         checked ? "border-text-primary bg-bg-subtle" : "border-border-default hover:bg-bg-subtle"
                       )}
                     >
@@ -194,9 +194,9 @@ export function ContextSection() {
               {sendError && (
                 <p
                   role="alert"
-                  className="flex items-start gap-2 bg-danger-bg px-3 py-2.5 text-body-medium text-danger-text"
+                  className="flex items-start gap-2 bg-bg-critical-subtle px-3 py-2.5 text-body-medium text-text-critical"
                 >
-                  <CircleAlert className="mt-0.5 size-4 shrink-0 text-icon-danger" strokeWidth={1.75} aria-hidden />
+                  <CircleAlert className="mt-0.5 size-4 shrink-0 text-icon-critical" strokeWidth={1.75} aria-hidden />
                   Couldn&apos;t send. Try again.
                 </p>
               )}

@@ -56,8 +56,8 @@ function NavLink({ item, active, rail }: { item: NavItem; active: boolean; rail:
     "flex h-10 w-full items-center gap-3.5 pl-4 text-left text-body-medium transition-colors",
     rail && "max-xl:justify-center max-xl:pl-0",
     active
-      ? "bg-brand-subtle text-brand-text"
-      : "text-text-head hover:bg-bg-subtle hover:text-text-primary"
+      ? "bg-bg-muted text-text-primary"
+      : "text-text-secondary hover:bg-bg-subtle hover:text-text-primary"
   )
   const content = (
     <>
@@ -104,7 +104,7 @@ function BusinessSwitcher({ rail }: { rail: boolean }) {
         >
           <span
             aria-hidden
-            className="flex size-7 shrink-0 items-center justify-center bg-fill-inverse text-label-xsmall-strong text-text-inverse"
+            className="flex size-7 shrink-0 items-center justify-center bg-bg-inverse text-label-xsmall-strong text-text-inverse"
           >
             TA
           </span>
@@ -151,7 +151,7 @@ function Nav({ rail, onNavigate }: { rail: boolean; onNavigate?: () => void }) {
 /** Desktop and tablet sidebar. Hidden below 768px, where the header menu opens `MobileNav`. */
 export function Sidebar() {
   return (
-    <aside className="sticky top-0 flex h-screen w-[70px] shrink-0 flex-col border-r border-border-default bg-bg-base max-md:hidden xl:w-60">
+    <aside className="sticky top-0 flex h-screen w-[70px] shrink-0 flex-col border-r border-border-default bg-bg-default max-md:hidden xl:w-60">
       <div className="flex h-[70px] items-center border-b border-border-default px-3 max-xl:justify-center max-xl:px-0">
         <BusinessSwitcher rail />
       </div>

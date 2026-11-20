@@ -22,7 +22,7 @@ export function BarChart({ values, height = 64 }: { values: number[]; height?: n
             y={height - h}
             width={bar}
             height={h}
-            className="fill-info-strong"
+            className="fill-bg-info"
           />
         )
       })}

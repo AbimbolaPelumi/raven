@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils"
 function MailFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-bg-subtle">
-      <header className="border-b border-border-default bg-bg-base">
+      <header className="border-b border-border-default bg-bg-default">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
           <Link
             href="/inbox"
@@ -41,7 +41,7 @@ export function InboxList() {
 
   return (
     <MailFrame>
-      <div className="border-border-default bg-bg-base sm:border">
+      <div className="border-border-default bg-bg-default sm:border">
         <h1 className="border-b border-border-default px-4 py-3 text-heading-small text-text-primary">
           Inbox
         </h1>
@@ -96,7 +96,7 @@ export function EmailView({ id }: { id: string }) {
   if (!email) {
     return (
       <MailFrame>
-        <div className="bg-bg-base px-4 py-16 text-center sm:border sm:border-border-default">
+        <div className="bg-bg-default px-4 py-16 text-center sm:border sm:border-border-default">
           <p className="text-body-medium text-text-secondary">This message isn&apos;t here.</p>
           <Link
             href="/inbox"
@@ -112,7 +112,7 @@ export function EmailView({ id }: { id: string }) {
 
   return (
     <MailFrame>
-      <article className="bg-bg-base sm:border sm:border-border-default">
+      <article className="bg-bg-default sm:border sm:border-border-default">
         <div className="border-b border-border-default px-4 py-4">
           <Link
             href="/inbox"

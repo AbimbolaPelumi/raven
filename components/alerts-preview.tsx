@@ -83,16 +83,16 @@ export function AlertsPreview() {
         <div className="grid min-h-0 flex-1 gap-8 overflow-y-auto px-4 py-6 md:grid-cols-3 md:gap-6 md:px-6">
           {/* Push on a lock screen */}
           <Column title="Push notification" caption="Phone lock screen" onOpen={go}>
-            <div className="mx-auto flex h-[420px] w-full max-w-[260px] flex-col items-center rounded-[36px] border-[6px] border-fill-inverse bg-bg-secondary px-3 pt-10">
+            <div className="mx-auto flex h-[420px] w-full max-w-[260px] flex-col items-center rounded-[36px] border-[6px] border-bg-inverse bg-bg-emphasis px-3 pt-10">
               <p className="text-body-small text-text-secondary">{fmtDate(at).replace(/ \d{4}$/, "")}</p>
               <p className="font-serif text-[52px] leading-none text-text-primary">
                 {fmtTime(at).replace(/[ap]m$/, "")}
               </p>
-              <div className="mt-8 w-full rounded-2xl bg-bg-base/90 p-3 shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+              <div className="mt-8 w-full rounded-2xl bg-bg-default/90 p-3 shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
                 <div className="flex items-center gap-2">
                   <span
                     aria-hidden
-                    className="flex size-5 items-center justify-center rounded-[5px] bg-fill-inverse text-[10px] font-medium text-text-inverse"
+                    className="flex size-5 items-center justify-center rounded-[5px] bg-bg-inverse text-[10px] font-medium text-text-inverse"
                   >
                     R
                   </span>
@@ -107,11 +107,11 @@ export function AlertsPreview() {
 
           {/* SMS thread */}
           <Column title="SMS" caption="Messages thread" onOpen={go}>
-            <div className="mx-auto flex h-[420px] w-full max-w-[260px] flex-col rounded-[36px] border-[6px] border-fill-inverse bg-bg-base">
+            <div className="mx-auto flex h-[420px] w-full max-w-[260px] flex-col rounded-[36px] border-[6px] border-bg-inverse bg-bg-default">
               <div className="flex flex-col items-center gap-1 border-b border-border-default pt-5 pb-3">
                 <span
                   aria-hidden
-                  className="flex size-9 items-center justify-center rounded-full bg-bg-secondary text-body-small-strong text-text-primary"
+                  className="flex size-9 items-center justify-center rounded-full bg-bg-emphasis text-body-small-strong text-text-primary"
                 >
                   R
                 </span>
@@ -131,7 +131,7 @@ export function AlertsPreview() {
           {/* Email */}
           <Column title="Email" caption={`Subject: ${ALERT.emailSubject}`} onOpen={go}>
             <div className="flex h-[420px] flex-col border border-border-default">
-              <div className="shrink-0 border-b border-border-default bg-bg-base px-3 py-2.5 text-body-small">
+              <div className="shrink-0 border-b border-border-default bg-bg-default px-3 py-2.5 text-body-small">
                 <p className="text-body-small-strong text-text-primary">{ALERT.emailSubject}</p>
                 <p className="text-text-secondary">From Raven · {fmtTime(at)}</p>
               </div>

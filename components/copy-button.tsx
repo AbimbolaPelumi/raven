@@ -31,7 +31,7 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
         timer.current = setTimeout(() => setCopied(false), 1500)
       }}
       className={cn(
-        "relative flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-default bg-bg-base text-icon-primary",
+        "relative flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-default bg-bg-default text-icon-primary",
         // Reveal: fast ease-out fade. Press: subtle scale for feedback.
         "opacity-0 transition-[opacity,transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]",
         "group-hover/copy:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100",

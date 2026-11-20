@@ -8,9 +8,9 @@ const LABEL: Record<PayoutStatus, string> = {
 }
 
 const DOT: Record<PayoutStatus, string> = {
-  paid: "bg-success-dot",
-  "on-hold": "bg-hold-dot",
-  pending: "bg-pending-dot",
+  paid: "bg-icon-success",
+  "on-hold": "bg-icon-critical",
+  pending: "bg-icon-warning",
 }
 
 /** Status is always conveyed by text, not colour alone. */
@@ -32,9 +32,9 @@ const PAYMENT_LABEL: Record<PaymentStatus, string> = {
 }
 
 const PAYMENT_DOT: Record<PaymentStatus, string> = {
-  succeeded: "bg-success-dot",
-  refunded: "bg-info-dot",
-  failed: "bg-danger-dot",
+  succeeded: "bg-icon-success",
+  refunded: "bg-icon-info",
+  failed: "bg-icon-critical",
 }
 
 export function PaymentStatusPill({ status }: { status: PaymentStatus }) {

@@ -12,12 +12,12 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        paid: "bg-success-bg text-success-text",
-        "on-hold": "bg-hold-bg text-hold-text",
-        pending: "bg-pending-bg text-pending-text",
-        succeeded: "bg-success-bg text-success-text",
-        refunded: "bg-info-bg text-info-text",
-        failed: "bg-danger-bg text-danger-text",
+        paid: "bg-bg-success-subtle text-text-success",
+        "on-hold": "bg-bg-critical-subtle text-text-critical",
+        pending: "bg-bg-warning-subtle text-text-warning",
+        succeeded: "bg-bg-success-subtle text-text-success",
+        refunded: "bg-bg-info-subtle text-text-info",
+        failed: "bg-bg-critical-subtle text-text-critical",
       },
     },
     defaultVariants: {

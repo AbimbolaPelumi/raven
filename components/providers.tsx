@@ -32,7 +32,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener("change", apply)
   }, [theme])
 
-  if (!hydrated) return <div className="min-h-screen bg-bg-base" />
+  if (!hydrated) return <div className="min-h-screen bg-bg-default" />
 
   return (
     <TooltipProvider delayDuration={200}>

@@ -20,12 +20,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "!rounded-none !border !border-border-default !bg-bg-base !text-text-primary !shadow-lg !font-sans !text-body-medium",
+            "!rounded-none !border !border-border-default !bg-bg-default !text-text-primary !shadow-lg !font-sans !text-body-medium",
         },
       }}
       style={
         {
-          "--normal-bg": "var(--bg-base)",
+          "--normal-bg": "var(--bg-default)",
           "--normal-text": "var(--text-primary)",
           "--normal-border": "var(--border-default)",
           "--border-radius": "0px",

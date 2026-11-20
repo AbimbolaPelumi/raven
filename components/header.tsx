@@ -60,7 +60,7 @@ export function Header() {
   const unread = notifications.some((n) => !n.read)
 
   return (
-    <header className="flex h-[60px] shrink-0 items-center justify-between gap-3 border-b border-border-default bg-bg-base px-4 md:h-[70px] md:px-6">
+    <header className="flex h-[60px] shrink-0 items-center justify-between gap-3 border-b border-border-default bg-bg-default px-4 md:h-[70px] md:px-6">
       <MobileNav />
       <label className="flex min-w-0 items-center gap-3 text-text-secondary max-md:hidden">
         <Search className="size-[18px] shrink-0 text-icon-secondary" strokeWidth={1.75} aria-hidden />
@@ -85,7 +85,7 @@ export function Header() {
               {unread && (
                 <span
                   aria-hidden
-                  className="absolute top-0 right-0 size-2 rounded-full bg-info-dot ring-2 ring-bg-base"
+                  className="absolute top-0 right-0 size-2 rounded-full bg-icon-info ring-2 ring-bg-default"
                 />
               )}
             </button>
@@ -119,7 +119,7 @@ export function Header() {
 
         <span
           aria-label="Tolu Adeyemi"
-          className="flex size-8 items-center justify-center rounded-full bg-bg-secondary text-body-small text-text-primary"
+          className="flex size-8 items-center justify-center rounded-full bg-bg-emphasis text-body-small text-text-primary"
         >
           TA
         </span>

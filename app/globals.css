@@ -4,10 +4,14 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ------------------------------------------------------------------ */
-/* Primitives: raw values. Never used directly in components.          */
+/* Tokens mirror the Figma file's variables (source of truth):          */
+/*  - Primitives: raw values, never used directly in components.        */
+/*  - Theme: color/{bg,border,text,icon}/..., Light and Dark modes.      */
+/* Only addition: the "warning" family (built from the orange           */
+/* primitives) for the Pending status, which Figma's Theme lacks.       */
 /* ------------------------------------------------------------------ */
 :root {
-  /* gray */
+  /* color/gray */
   --gray-0: #ffffff;
   --gray-50: #f7f8fa;
   --gray-100: #f0f2f5;
@@ -22,129 +26,135 @@
   --gray-850: #1c1f24;
   --gray-900: #15171b;
   --gray-950: #0c0d10;
-  /* status */
+  /* color/purple */
+  --purple-50: #f3f0fd;
+  --purple-100: #ebe6fc;
+  --purple-200: #d7cef9;
+  --purple-300: #b4a6ff;
+  --purple-400: #9c8bf5;
+  --purple-500: #8e7cf0;
+  --purple-600: #6e56cf;
+  --purple-700: #5b44c2;
+  --purple-800: #3d2e86;
+  --purple-900: #221c3d;
+  /* color/green */
   --green-100: #ddf1e4;
   --green-300: #3ddc97;
   --green-500: #00c969;
   --green-700: #00804f;
   --green-900: #0f2a1c;
+  /* color/orange */
+  --orange-100: #ffedd5;
+  --orange-300: #fb9a5a;
+  --orange-500: #f97316;
+  --orange-700: #b4500a;
+  --orange-900: #2e1d0e;
+  /* color/blue */
+  --blue-100: #ddebff;
+  --blue-300: #6ea8fe;
+  --blue-500: #1f6feb;
+  --blue-700: #1a5fcc;
+  --blue-900: #10213d;
+  /* color/red */
   --red-100: #fee4e2;
   --red-300: #fda29b;
   --red-500: #f04438;
   --red-600: #d92d20;
   --red-700: #b42318;
   --red-900: #3a1412;
-  --blue-100: #ddebff;
-  --blue-300: #6ea8fe;
-  --blue-500: #1f6feb;
-  --blue-700: #1a5fcc;
-  --blue-900: #10213d;
-  --yellow-100: #fef0c7;
-  --yellow-300: #fec84b;
-  --yellow-500: #f79009;
-  --yellow-700: #b54708;
-  --yellow-900: #3d2a07;
+  /* Spacing and radius scales match Figma's and come from Tailwind (4px steps, square corners). */
 }
 
-/* ------------------------------------------------------------------ */
-/* Theme: what components use. Light by default, dark via .dark.       */
-/* ------------------------------------------------------------------ */
+/* Theme, Light mode */
 :root {
-  --bg-base: var(--gray-0);
+  --bg-default: var(--gray-0);
   --bg-subtle: var(--gray-50);
   --bg-muted: var(--gray-100);
-  --bg-secondary: var(--gray-150);
+  --bg-emphasis: var(--gray-150);
+  --bg-inverse: var(--gray-900);
+  --bg-overlay: var(--gray-950);
+  --bg-success-subtle: var(--green-100);
+  --bg-success: var(--green-700);
+  --bg-critical-subtle: var(--red-100);
+  --bg-critical: var(--red-600);
+  --bg-info-subtle: var(--blue-100);
+  --bg-info: var(--blue-500);
+  --bg-warning-subtle: var(--orange-100);
   --border-default: var(--gray-200);
   --border-strong: var(--gray-300);
+  --border-selected: var(--gray-200);
+  --border-focus: var(--blue-500);
+  --border-info: var(--blue-300);
+  --border-success: var(--green-300);
+  --border-critical: var(--red-300);
+  --border-warning: var(--orange-300);
   --text-primary: var(--gray-950);
   --text-secondary: var(--gray-600);
-  --text-head: var(--gray-600);
   --text-tertiary: var(--gray-500);
   --text-disabled: var(--gray-300);
   --text-inverse: var(--gray-0);
-  --fill-inverse: var(--gray-900);
-  --brand-primary: var(--gray-900);
-  --brand-subtle: var(--gray-100);
-  --brand-text: var(--gray-950);
-  --brand-on: var(--gray-0);
-  --success-bg: var(--green-100);
-  --success-dot: var(--green-500);
-  --success-text: var(--green-700);
-  --success-strong: var(--green-700);
-  --hold-bg: var(--red-100);
-  --hold-dot: var(--red-500);
-  --hold-text: var(--red-700);
-  --hold-strong: var(--red-600);
-  --hold-on-strong: var(--gray-0);
-  --danger-bg: var(--red-100);
-  --danger-dot: var(--red-500);
-  --danger-text: var(--red-700);
-  --info-bg: var(--blue-100);
-  --info-dot: var(--blue-500);
-  --info-text: var(--blue-700);
-  --info-strong: var(--blue-500);
-  --pending-bg: var(--yellow-100);
-  --pending-dot: var(--yellow-500);
-  --pending-text: var(--yellow-700);
+  --text-success: var(--green-700);
+  --text-critical: var(--red-700);
+  --text-info: var(--blue-700);
+  --text-warning: var(--orange-700);
+  --text-on-critical: var(--gray-0);
   --icon-primary: var(--gray-950);
   --icon-secondary: var(--gray-600);
   --icon-tertiary: var(--gray-500);
+  --icon-disabled: var(--gray-300);
   --icon-inverse: var(--gray-0);
-  --icon-on-strong: var(--gray-0);
-  --icon-info: var(--blue-700);
-  --icon-success: var(--green-700);
-  --icon-danger: var(--red-700);
-  --icon-pending: var(--yellow-700);
-  --overlay: color-mix(in srgb, var(--gray-950) 40%, transparent);
+  --icon-neutral: var(--gray-500);
+  --icon-success: var(--green-500);
+  --icon-critical: var(--red-500);
+  --icon-info: var(--blue-500);
+  --icon-warning: var(--orange-500);
+  --icon-on-critical: var(--gray-0);
 }
 
+/* Theme, Dark mode */
 .dark {
-  --bg-base: var(--gray-950);
+  --bg-default: var(--gray-950);
   --bg-subtle: var(--gray-900);
   --bg-muted: var(--gray-850);
-  --bg-secondary: var(--gray-800);
+  --bg-emphasis: var(--gray-800);
+  --bg-inverse: var(--gray-50);
+  --bg-overlay: var(--gray-950);
+  --bg-success-subtle: var(--green-900);
+  --bg-success: var(--green-700);
+  --bg-critical-subtle: var(--red-900);
+  --bg-critical: var(--red-600);
+  --bg-info-subtle: var(--blue-900);
+  --bg-info: var(--blue-500);
+  --bg-warning-subtle: var(--orange-900);
   --border-default: var(--gray-800);
   --border-strong: var(--gray-700);
+  --border-selected: var(--gray-800);
+  --border-focus: var(--blue-300);
+  --border-info: var(--blue-700);
+  --border-success: var(--green-700);
+  --border-critical: var(--red-700);
+  --border-warning: var(--orange-700);
   --text-primary: var(--gray-50);
   --text-secondary: var(--gray-400);
-  --text-head: var(--gray-400);
   --text-tertiary: var(--gray-500);
   --text-disabled: var(--gray-700);
   --text-inverse: var(--gray-950);
-  --fill-inverse: var(--gray-50);
-  --brand-primary: var(--gray-50);
-  --brand-subtle: var(--gray-850);
-  --brand-text: var(--gray-50);
-  --brand-on: var(--gray-950);
-  --success-bg: var(--green-900);
-  --success-dot: var(--green-500);
-  --success-text: var(--green-300);
-  --success-strong: var(--green-700);
-  --hold-bg: var(--red-900);
-  --hold-dot: var(--red-500);
-  --hold-text: var(--red-300);
-  --hold-strong: var(--red-600);
-  --hold-on-strong: var(--gray-0);
-  --danger-bg: var(--red-900);
-  --danger-dot: var(--red-500);
-  --danger-text: var(--red-300);
-  --info-bg: var(--blue-900);
-  --info-dot: var(--blue-500);
-  --info-text: var(--blue-300);
-  --info-strong: var(--blue-500);
-  --pending-bg: var(--yellow-900);
-  --pending-dot: var(--yellow-500);
-  --pending-text: var(--yellow-300);
+  --text-success: var(--green-300);
+  --text-critical: var(--red-300);
+  --text-info: var(--blue-300);
+  --text-warning: var(--orange-300);
+  --text-on-critical: var(--gray-0);
   --icon-primary: var(--gray-50);
   --icon-secondary: var(--gray-400);
   --icon-tertiary: var(--gray-500);
+  --icon-disabled: var(--gray-700);
   --icon-inverse: var(--gray-950);
-  --icon-on-strong: var(--gray-0);
-  --icon-info: var(--blue-300);
-  --icon-success: var(--green-300);
-  --icon-danger: var(--red-300);
-  --icon-pending: var(--yellow-300);
-  --overlay: color-mix(in srgb, var(--gray-950) 40%, transparent);
+  --icon-neutral: var(--gray-500);
+  --icon-success: var(--green-500);
+  --icon-critical: var(--red-500);
+  --icon-info: var(--blue-500);
+  --icon-warning: var(--orange-500);
+  --icon-on-critical: var(--gray-0);
   color-scheme: dark;
 }
 
@@ -152,14 +162,14 @@
 /* shadcn variables, pointed at the theme tokens above.                */
 /* ------------------------------------------------------------------ */
 :root {
-  --background: var(--bg-base);
+  --background: var(--bg-default);
   --foreground: var(--text-primary);
-  --card: var(--bg-base);
+  --card: var(--bg-default);
   --card-foreground: var(--text-primary);
-  --popover: var(--bg-base);
+  --popover: var(--bg-default);
   --popover-foreground: var(--text-primary);
-  --primary: var(--brand-primary);
-  --primary-foreground: var(--brand-on);
+  --primary: var(--bg-inverse);
+  --primary-foreground: var(--text-inverse);
   --secondary: var(--bg-subtle);
   --muted: var(--bg-subtle);
   --accent: var(--bg-subtle);
@@ -168,8 +178,8 @@
   --muted-foreground: var(--text-secondary);
   --border: var(--border-default);
   --input: var(--border-default);
-  --ring: var(--text-primary);
-  --destructive: var(--hold-strong);
+  --ring: var(--border-focus);
+  --destructive: var(--bg-critical);
   --radius: 0rem;
 }
 
@@ -206,53 +216,49 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
 
-  /* theme tokens */
-  --color-bg-base: var(--bg-base);
+  /* Theme tokens as Tailwind colours: bg-bg-default, text-text-primary, bg-icon-success… */
+  --color-bg-default: var(--bg-default);
   --color-bg-subtle: var(--bg-subtle);
   --color-bg-muted: var(--bg-muted);
-  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-emphasis: var(--bg-emphasis);
+  --color-bg-inverse: var(--bg-inverse);
+  --color-bg-overlay: var(--bg-overlay);
+  --color-bg-success-subtle: var(--bg-success-subtle);
+  --color-bg-success: var(--bg-success);
+  --color-bg-critical-subtle: var(--bg-critical-subtle);
+  --color-bg-critical: var(--bg-critical);
+  --color-bg-info-subtle: var(--bg-info-subtle);
+  --color-bg-info: var(--bg-info);
+  --color-bg-warning-subtle: var(--bg-warning-subtle);
   --color-border-default: var(--border-default);
   --color-border-strong: var(--border-strong);
+  --color-border-selected: var(--border-selected);
+  --color-border-focus: var(--border-focus);
+  --color-border-info: var(--border-info);
+  --color-border-success: var(--border-success);
+  --color-border-critical: var(--border-critical);
+  --color-border-warning: var(--border-warning);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
-  --color-text-head: var(--text-head);
   --color-text-tertiary: var(--text-tertiary);
   --color-text-disabled: var(--text-disabled);
   --color-text-inverse: var(--text-inverse);
-  --color-fill-inverse: var(--fill-inverse);
-  --color-brand-primary: var(--brand-primary);
-  --color-brand-subtle: var(--brand-subtle);
-  --color-brand-text: var(--brand-text);
-  --color-brand-on: var(--brand-on);
-  --color-success-bg: var(--success-bg);
-  --color-success-dot: var(--success-dot);
-  --color-success-text: var(--success-text);
-  --color-success-strong: var(--success-strong);
-  --color-hold-bg: var(--hold-bg);
-  --color-hold-dot: var(--hold-dot);
-  --color-hold-text: var(--hold-text);
-  --color-hold-strong: var(--hold-strong);
-  --color-hold-on-strong: var(--hold-on-strong);
-  --color-danger-bg: var(--danger-bg);
-  --color-danger-dot: var(--danger-dot);
-  --color-danger-text: var(--danger-text);
-  --color-info-bg: var(--info-bg);
-  --color-info-dot: var(--info-dot);
-  --color-info-text: var(--info-text);
-  --color-info-strong: var(--info-strong);
-  --color-pending-bg: var(--pending-bg);
-  --color-pending-dot: var(--pending-dot);
-  --color-pending-text: var(--pending-text);
+  --color-text-success: var(--text-success);
+  --color-text-critical: var(--text-critical);
+  --color-text-info: var(--text-info);
+  --color-text-warning: var(--text-warning);
+  --color-text-on-critical: var(--text-on-critical);
   --color-icon-primary: var(--icon-primary);
   --color-icon-secondary: var(--icon-secondary);
   --color-icon-tertiary: var(--icon-tertiary);
+  --color-icon-disabled: var(--icon-disabled);
   --color-icon-inverse: var(--icon-inverse);
-  --color-icon-on-strong: var(--icon-on-strong);
-  --color-icon-info: var(--icon-info);
+  --color-icon-neutral: var(--icon-neutral);
   --color-icon-success: var(--icon-success);
-  --color-icon-danger: var(--icon-danger);
-  --color-icon-pending: var(--icon-pending);
-  --color-overlay: var(--overlay);
+  --color-icon-critical: var(--icon-critical);
+  --color-icon-info: var(--icon-info);
+  --color-icon-warning: var(--icon-warning);
+  --color-icon-on-critical: var(--icon-on-critical);
 }
 
 /* ------------------------------------------------------------------ */
@@ -270,11 +276,18 @@
   font-size: 28px;
   line-height: 1.2;
 }
+@utility text-display-small {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.25;
+}
 @utility text-heading-large {
   font-weight: 400;
   font-size: 24px;
   line-height: 1.25;
 }
+/* Not in Figma's text styles yet: 18px medium, used for drawer and modal titles. */
 @utility text-heading-medium {
   font-weight: 500;
   font-size: 18px;
@@ -284,6 +297,11 @@
   font-weight: 500;
   font-size: 16px;
   line-height: 1.4;
+}
+@utility text-body-large {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.45;
 }
 @utility text-body-medium {
   font-weight: 400;
@@ -305,6 +323,11 @@
   font-size: 12px;
   line-height: 1.4;
 }
+@utility text-label-xsmall {
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 1.4;
+}
 @utility text-label-xsmall-strong {
   font-weight: 500;
   font-size: 11px;
@@ -319,12 +342,12 @@
     @apply font-sans;
   }
   body {
-    @apply bg-bg-base text-text-primary antialiased;
+    @apply bg-bg-default text-text-primary antialiased;
     font-size: 14px;
     line-height: 1.45;
   }
   :focus-visible {
-    outline: 2px solid var(--text-primary);
+    outline: 2px solid var(--border-focus);
     outline-offset: 2px;
   }
 }

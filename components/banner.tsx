@@ -39,12 +39,12 @@ export function Banner({ banner, onAction }: BannerProps) {
             data-tone={tone}
             className={cn(
               "flex items-start gap-2 py-2.5 pr-4 pl-4 text-body-medium md:items-center md:pl-6",
-              tone === "hold" && "bg-hold-strong text-hold-on-strong",
-              tone === "success" && "bg-success-strong text-hold-on-strong"
+              tone === "hold" && "bg-bg-critical text-text-on-critical",
+              tone === "success" && "bg-bg-success text-text-on-critical"
             )}
           >
             <Icon
-              className="mt-0.5 size-4 shrink-0 text-icon-on-strong md:mt-0"
+              className="mt-0.5 size-4 shrink-0 text-icon-on-critical md:mt-0"
               strokeWidth={1.75}
               aria-hidden
             />
@@ -67,7 +67,7 @@ export function Banner({ banner, onAction }: BannerProps) {
                 aria-label="Dismiss"
                 // -my-0.5: the 24px target sits inside the 20px text line, so this banner
                 // is exactly as tall as the others (no layout shift between states).
-                className="-my-0.5 flex size-6 shrink-0 cursor-pointer items-center justify-center text-icon-on-strong hover:bg-white/15 focus-visible:outline-white"
+                className="-my-0.5 flex size-6 shrink-0 cursor-pointer items-center justify-center text-icon-on-critical hover:bg-white/15 focus-visible:outline-white"
               >
                 <X className="size-4" strokeWidth={1.75} />
               </button>

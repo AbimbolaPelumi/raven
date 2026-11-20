@@ -28,7 +28,7 @@ export function PushNotification() {
       // Lets the open drawer's focus trap ignore interactions with this card.
       data-proto-overlay
       role="alert"
-      className="group pointer-events-auto fixed top-4 right-4 z-[80] w-[360px] max-w-[calc(100vw-32px)] animate-[push-in_240ms_cubic-bezier(0.22,1,0.36,1)] border border-border-default bg-bg-base shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+      className="group pointer-events-auto fixed top-4 right-4 z-[80] w-[360px] max-w-[calc(100vw-32px)] animate-[push-in_240ms_cubic-bezier(0.22,1,0.36,1)] border border-border-default bg-bg-default shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
     >
       <button
         type="button"
@@ -41,7 +41,7 @@ export function PushNotification() {
       >
         <span
           aria-hidden
-          className="mt-0.5 flex size-8 shrink-0 items-center justify-center bg-fill-inverse text-label-xsmall-strong text-text-inverse"
+          className="mt-0.5 flex size-8 shrink-0 items-center justify-center bg-bg-inverse text-label-xsmall-strong text-text-inverse"
         >
           R
         </span>

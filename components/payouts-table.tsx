@@ -30,9 +30,9 @@ const STATUS: Record<
   PayoutStatus,
   { label: string; icon: typeof Check; tint: string; tone: string }
 > = {
-  paid: { label: "Paid", icon: Check, tint: "bg-success-bg", tone: "text-icon-success" },
-  "on-hold": { label: "On hold", icon: Pause, tint: "bg-hold-bg", tone: "text-icon-danger" },
-  pending: { label: "Pending", icon: Clock, tint: "bg-pending-bg", tone: "text-icon-pending" },
+  paid: { label: "Paid", icon: Check, tint: "bg-bg-success-subtle", tone: "text-icon-success" },
+  "on-hold": { label: "On hold", icon: Pause, tint: "bg-bg-critical-subtle", tone: "text-icon-critical" },
+  pending: { label: "Pending", icon: Clock, tint: "bg-bg-warning-subtle", tone: "text-icon-warning" },
 }
 
 function MobileRow({ row, onOpenHold }: { row: PayoutRow; onOpenHold: () => void }) {
@@ -88,7 +88,7 @@ function MobileList({ rows, onOpenHold }: PayoutsTableProps) {
             {g.title}
           </h2>
           {/* Same chrome as the table and cards: square, bordered, lines between rows. */}
-          <ul aria-label={`${g.title} payouts`} className="border border-border-default bg-bg-base">
+          <ul aria-label={`${g.title} payouts`} className="border border-border-default bg-bg-default">
             {g.rows.map((row) => (
               <MobileRow key={row.id} row={row} onOpenHold={onOpenHold} />
             ))}
@@ -108,14 +108,14 @@ export function PayoutsTable({ rows, onOpenHold }: PayoutsTableProps) {
     <>
       <MobileList rows={rows} onOpenHold={onOpenHold} />
 
-      <div className="border border-border-default bg-bg-base max-md:hidden">
+      <div className="border border-border-default bg-bg-default max-md:hidden">
         <Table className="table-fixed text-body-medium">
           <TableHeader className="[&_tr]:border-b [&_tr]:border-border-default">
             <TableRow className="h-12 hover:bg-transparent">
               {COLS.map((c) => (
                 <TableHead
                   key={c.label}
-                  className={cn("h-12 text-body-medium font-normal text-text-head", CELL, c.w, c.cell)}
+                  className={cn("h-12 text-body-medium font-normal text-text-secondary", CELL, c.w, c.cell)}
                 >
                   {c.label}
                 </TableHead>

@@ -196,7 +196,7 @@ export function LineChart({
           <path
             d={path(data)}
             fill="none"
-            className="stroke-info-strong"
+            className="stroke-bg-info"
             strokeWidth={1.5}
             strokeLinejoin="round"
           />
@@ -217,7 +217,7 @@ export function LineChart({
                 cx={x(active)}
                 cy={y(cur.value)}
                 r={4}
-                className="fill-info-strong stroke-bg-base"
+                className="fill-bg-info stroke-bg-default"
                 strokeWidth={2}
               />
             </g>
@@ -228,7 +228,7 @@ export function LineChart({
       {full && active !== null && cur && width > 0 && (
         <div
           role="status"
-          className="pointer-events-none absolute top-2 z-10 min-w-40 border border-border-default bg-bg-base p-3 text-body-small shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
+          className="pointer-events-none absolute top-2 z-10 min-w-40 border border-border-default bg-bg-default p-3 text-body-small shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
           style={{
             left: Math.min(Math.max(x(active) + 12, 0), Math.max(0, width - 176)),
           }}
@@ -236,7 +236,7 @@ export function LineChart({
           <p className="text-body-small-strong text-text-primary">{cur.label}</p>
           <p className="mt-1.5 flex items-center justify-between gap-4">
             <span className="flex items-center gap-1.5 text-text-secondary">
-              <span aria-hidden className="size-2 bg-info-strong" />
+              <span aria-hidden className="size-2 bg-bg-info" />
               Current
             </span>
             <span className="text-text-primary">{format(cur.value)}</span>

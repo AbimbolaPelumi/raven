@@ -69,7 +69,7 @@ function SummaryCard({
         onActivate && "cursor-pointer transition-colors hover:bg-bg-subtle",
         // Height comes from content only, like Figma. Side-by-side cards are
         // equalised by the parent grid (items-stretch), not by a fixed height.
-        "flex min-w-0 flex-1 flex-col items-start overflow-clip border border-border-default bg-bg-base",
+        "flex min-w-0 flex-1 flex-col items-start overflow-clip border border-border-default bg-bg-default",
         className
       )}
       {...props}
@@ -84,7 +84,7 @@ function SummaryCard({
           )}
         </div>
         {showLink && (
-          <a href={href} className="w-fit text-brand-text hover:underline">
+          <a href={href} className="w-fit text-text-primary hover:underline">
             {link}
           </a>
         )}

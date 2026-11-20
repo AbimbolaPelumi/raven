@@ -35,12 +35,12 @@ function Switch({
         aria-hidden
         className={cn(
           "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-          checked ? "bg-brand-primary" : "bg-bg-secondary"
+          checked ? "bg-bg-inverse" : "bg-bg-emphasis"
         )}
       >
         <span
           className={cn(
-            "absolute top-0.5 left-0.5 size-4 rounded-full bg-bg-base transition-transform",
+            "absolute top-0.5 left-0.5 size-4 rounded-full bg-bg-default transition-transform",
             checked && "translate-x-4"
           )}
         />
@@ -70,7 +70,7 @@ export function DemoControls() {
     <aside
       data-proto-overlay
       aria-label="Demo controls"
-      className="pointer-events-auto fixed right-2 bottom-2 left-2 z-[90] md:right-auto md:bottom-4 md:left-4 md:w-[280px] border border-border-strong bg-bg-base p-4 shadow-[0_8px_24px_rgba(0,0,0,0.16)]"
+      className="pointer-events-auto fixed right-2 bottom-2 left-2 z-[90] md:right-auto md:bottom-4 md:left-4 md:w-[280px] border border-border-strong bg-bg-default p-4 shadow-[0_8px_24px_rgba(0,0,0,0.16)]"
     >
       <div className="flex items-baseline justify-between">
         <h2 className="text-body-medium-strong text-text-primary">Demo controls</h2>
@@ -133,7 +133,7 @@ export function DemoControls() {
                 className={cn(
                   "cursor-pointer px-2.5 py-1 text-body-small capitalize transition-colors",
                   s.theme === t
-                    ? "bg-brand-primary text-brand-on"
+                    ? "bg-bg-inverse text-text-inverse"
                     : "text-text-secondary hover:bg-bg-subtle"
                 )}
               >

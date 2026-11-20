@@ -48,9 +48,9 @@ export function HomeView() {
   const succeededAmount = cur.volume - cur.refundedAmount
   const attempted = succeededCount + cur.refundedCount + cur.failedCount
   const breakdown = [
-    { key: "succeeded", label: "Succeeded", count: succeededCount, amount: succeededAmount, swatch: "bg-success-dot" },
-    { key: "refunded", label: "Refunded", count: cur.refundedCount, amount: cur.refundedAmount, swatch: "bg-info-dot" },
-    { key: "failed", label: "Failed", count: cur.failedCount, amount: cur.failedAmount, swatch: "bg-danger-dot" },
+    { key: "succeeded", label: "Succeeded", count: succeededCount, amount: succeededAmount, swatch: "bg-icon-success" },
+    { key: "refunded", label: "Refunded", count: cur.refundedCount, amount: cur.refundedAmount, swatch: "bg-icon-info" },
+    { key: "failed", label: "Failed", count: cur.failedCount, amount: cur.failedAmount, swatch: "bg-icon-critical" },
   ]
 
   return (

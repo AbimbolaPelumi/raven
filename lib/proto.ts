@@ -300,7 +300,7 @@ export interface BannerModel {
   actionLabel: string
 }
 
-/** Card status line: On hold (red), Pending (yellow) or No pending payout. */
+/** Card status: On hold, Pending or no pending payout. */
 export type CardStatus = "on-hold" | "pending" | "none"
 
 export interface SummaryModel {

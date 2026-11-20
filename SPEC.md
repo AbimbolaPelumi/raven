@@ -40,108 +40,88 @@ Single app. No backend. All data is local fixtures.
 
 ## Design tokens
 
-Two layers, matching Figma: **Primitives** (raw values, never used directly in components) and **Theme** (what components use), with light and dark modes.
+The Figma file's variables are the source of truth; `app/globals.css` mirrors them one to one. Two collections: **Primitives** (raw values, one mode, never used directly in components) and **Theme** (what components use, Light and Dark modes). Theme names follow `color/{bg,border,text,icon}/<name>`; in CSS that is `--bg-default`, `--text-primary` and so on, and in Tailwind `bg-bg-default`, `text-text-primary`, `border-border-default`, `bg-icon-success`.
 
 ### Primitives
 
 ```css
-:root {
-  /* gray */
-  --gray-0: #FFFFFF; --gray-50: #F7F8FA; --gray-100: #F0F2F5; --gray-150: #E8EBEF;
-  --gray-200: #E1E4E9; --gray-300: #CFD3DA; --gray-400: #A3A9B4; --gray-500: #858C98;
-  --gray-600: #626976; --gray-700: #3A3F48; --gray-800: #24272E; --gray-850: #1C1F24;
-  --gray-900: #15171B; --gray-950: #0C0D10;
-  /* status */
-  --green-100: #DDF1E4; --green-300: #3DDC97; --green-500: #00C969; --green-700: #00804F; --green-900: #0F2A1C;
-  --red-100: #FEE4E2; --red-300: #FDA29B; --red-500: #F04438; --red-600: #D92D20; --red-700: #B42318; --red-900: #3A1412;
-  --blue-100: #DDEBFF; --blue-300: #6EA8FE; --blue-500: #1F6FEB; --blue-700: #1A5FCC; --blue-900: #10213D;
-  --yellow-100: #FEF0C7; --yellow-300: #FEC84B; --yellow-500: #F79009; --yellow-700: #B54708; --yellow-900: #3D2A07;
-}
+/* color/gray */   0 #FFFFFF  50 #F7F8FA  100 #F0F2F5  150 #E8EBEF  200 #E1E4E9  300 #CFD3DA  400 #A3A9B4
+                   500 #858C98  600 #626976  700 #3A3F48  800 #24272E  850 #1C1F24  900 #15171B  950 #0C0D10
+/* color/purple */ 50 #F3F0FD  100 #EBE6FC  200 #D7CEF9  300 #B4A6FF  400 #9C8BF5  500 #8E7CF0  600 #6E56CF  700 #5B44C2  800 #3D2E86  900 #221C3D
+/* color/green */  100 #DDF1E4  300 #3DDC97  500 #00C969  700 #00804F  900 #0F2A1C
+/* color/orange */ 100 #FFEDD5  300 #FB9A5A  500 #F97316  700 #B4500A  900 #2E1D0E
+/* color/blue */   100 #DDEBFF  300 #6EA8FE  500 #1F6FEB  700 #1A5FCC  900 #10213D
+/* color/red */    100 #FEE4E2  300 #FDA29B  500 #F04438  600 #D92D20  700 #B42318  900 #3A1412
 ```
 
-### Theme (light, then dark)
+Also in Primitives: `spacing/*` (0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 64), `radius/*` (none 0, sm 4, md 8, full 999), `font/size/*` (11, 12, 14, 16, 18, 24, 28, 36), `font/family/sans` Instrument Sans, `font/family/serif` Hedvig Letters Serif.
+
+### Theme (Light / Dark)
 
 | Token | Light | Dark |
 |---|---|---|
-| `--bg-base` | gray-0 | gray-950 |
-| `--bg-subtle` | gray-50 | gray-900 |
-| `--bg-muted` | gray-100 | gray-850 |
-| `--bg-secondary` | gray-150 | gray-800 |
-| `--border-default` | gray-200 | gray-800 |
-| `--border-strong` | gray-300 | gray-700 |
-| `--text-primary` | gray-950 | gray-50 |
-| `--text-secondary` | gray-600 | gray-400 |
-| `--text-head` | gray-600 | gray-400 |
-| `--text-tertiary` | gray-500 | gray-500 |
-| `--text-disabled` | gray-300 | gray-700 |
-| `--text-inverse` | gray-0 | gray-950 |
-| `--fill-inverse` | gray-900 | gray-50 |
-| `--brand-primary` | gray-900 | gray-50 |
-| `--brand-subtle` | gray-100 | gray-850 |
-| `--brand-text` | gray-950 | gray-50 |
-| `--brand-on` | gray-0 | gray-950 |
-| `--success-bg` / `-dot` / `-text` / `-strong` | green-100 / green-500 / green-700 / green-700 | green-900 / green-500 / green-300 / green-700 |
-| `--hold-bg` / `-dot` / `-text` / `-strong` | red-100 / red-500 / red-700 / red-600 | red-900 / red-500 / red-300 / red-600 |
-| `--hold-on-strong` | gray-0 | gray-0 |
-| `--danger-bg` / `-dot` / `-text` | red-100 / red-500 / red-700 | red-900 / red-500 / red-300 |
-| `--info-bg` / `-dot` / `-text` / `-strong` | blue-100 / blue-500 / blue-700 / blue-500 | blue-900 / blue-500 / blue-300 / blue-500 |
-| `--icon-primary` / `-secondary` / `-tertiary` | gray-950 / gray-600 / gray-500 | gray-50 / gray-400 / gray-500 |
-| `--icon-inverse` | gray-0 | gray-950 |
-| `--icon-on-strong` | gray-0 | gray-0 |
-| `--pending-bg` / `-dot` / `-text` | yellow-100 / yellow-500 / yellow-700 | yellow-900 / yellow-500 / yellow-300 |
-| `--icon-info` / `-success` / `-danger` / `-pending` | blue-700 / green-700 / red-700 / yellow-700 | blue-300 / green-300 / red-300 / yellow-300 |
-| `--overlay` | gray-950 at 40% | gray-950 at 40% |
+| `bg/default` · `subtle` · `muted` · `emphasis` | gray-0 · 50 · 100 · 150 | gray-950 · 900 · 850 · 800 |
+| `bg/inverse` | gray-900 | gray-50 |
+| `bg/overlay` (used at 40% opacity) | gray-950 | gray-950 |
+| `bg/success-subtle` · `bg/success` | green-100 · green-700 | green-900 · green-700 |
+| `bg/critical-subtle` · `bg/critical` | red-100 · red-600 | red-900 · red-600 |
+| `bg/info-subtle` · `bg/info` | blue-100 · blue-500 | blue-900 · blue-500 |
+| `border/default` · `strong` · `selected` | gray-200 · 300 · 200 | gray-800 · 700 · 800 |
+| `border/focus` | blue-500 | blue-300 |
+| `border/info` · `success` · `critical` | blue-300 · green-300 · red-300 | blue-700 · green-700 · red-700 |
+| `text/primary` · `secondary` · `tertiary` · `disabled` · `inverse` | gray-950 · 600 · 500 · 300 · 0 | gray-50 · 400 · 500 · 700 · 950 |
+| `text/success` · `critical` · `info` | green-700 · red-700 · blue-700 | green-300 · red-300 · blue-300 |
+| `text/on-critical` · `icon/on-critical` | gray-0 | gray-0 |
+| `icon/primary` · `secondary` · `tertiary` · `disabled` · `inverse` · `neutral` | gray-950 · 600 · 500 · 300 · 0 · 500 | gray-50 · 400 · 500 · 700 · 950 · 500 |
+| `icon/success` · `critical` · `info` | green-500 · red-500 · blue-500 | same |
 
-Components use theme tokens only (bg, text, icon, border). **Icons only use `icon-*` tokens.**
+**Not in Figma yet (code only):** a `warning` family for the Pending status, built from the orange primitives in the same pattern: `bg/warning-subtle` (orange-100 / 900), `text/warning` (orange-700 / 300), `icon/warning` (orange-500), `border/warning` (orange-300 / 700).
+
+Usage: status dots and icons use `icon/*`; tinted pills use `bg/*-subtle` with `text/*`; filled banners use `bg/critical` or `bg/success` with `text/on-critical`; primary buttons use `bg/inverse` with `text/inverse`; focus rings use `border/focus`. Components use theme tokens only; icons only use `icon/*` tokens.
 
 Dark mode: `class="dark"` on `<html>`. Theme follows the system by default; the header theme switcher and the demo controls can force light or dark.
 
 ### Mapping to shadcn variables
 
-shadcn reads its own variable names. Point them at the theme tokens above so every shadcn component picks up the design:
-
 | shadcn variable | Theme token |
 |---|---|
-| `--background` | `--bg-base` |
-| `--foreground` | `--text-primary` |
-| `--card`, `--popover` | `--bg-base` |
-| `--card-foreground`, `--popover-foreground` | `--text-primary` |
-| `--primary` | `--brand-primary` |
-| `--primary-foreground` | `--brand-on` |
-| `--secondary`, `--muted`, `--accent` | `--bg-subtle` |
-| `--secondary-foreground`, `--accent-foreground` | `--text-primary` |
-| `--muted-foreground` | `--text-secondary` |
-| `--border`, `--input` | `--border-default` |
-| `--ring` | `--text-primary` |
-| `--destructive` | `--hold-strong` |
+| `--background`, `--card`, `--popover` | `bg/default` |
+| `--foreground`, `--card-foreground`, `--popover-foreground` | `text/primary` |
+| `--primary` / `--primary-foreground` | `bg/inverse` / `text/inverse` |
+| `--secondary`, `--muted`, `--accent` | `bg/subtle` |
+| `--secondary-foreground`, `--accent-foreground` | `text/primary` |
+| `--muted-foreground` | `text/secondary` |
+| `--border`, `--input` | `border/default` |
+| `--ring` | `border/focus` |
+| `--destructive` | `bg/critical` |
 | `--radius` | `0rem` |
-
-Keep the extra tokens (hold, success, info, overlay, text-head, text-tertiary) as additional Tailwind colours.
 
 ### Spacing and radius
 
 - Spacing scale (px): 0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 64. Use only these.
 - Radius: `none` 0, `sm` 4, `md` 8, `full` 999.
-- Cards, tables, inputs, buttons, banners, drawer: **square** (radius 0).
-- Fully round also: timeline markers.
-- Fully round: status pills, bell button, user avatar.
+- Cards, tables, inputs, buttons, banners, drawer, modals: **square** (radius 0).
+- Fully round: status pills, status icons, timeline markers, bell button, user avatar.
 
-### Text styles
+### Text styles (Figma)
 
 | Style | Font | Size / line height |
 |---|---|---|
 | Display/Large | Hedvig Letters Serif 400 | 36 / 120% |
 | Display/Medium | Hedvig Letters Serif 400 | 28 / 120% |
+| Display/Small | Hedvig Letters Serif 400 | 24 / 125% |
 | Heading/Large | Instrument Sans 400 | 24 / 125% |
-| Heading/Medium | Instrument Sans 500 | 18 / 140% |
+| Heading/Medium *(code only, not in Figma yet)* | Instrument Sans 500 | 18 / 140% |
 | Heading/Small | Instrument Sans 500 | 16 / 140% |
+| Body/Large | Instrument Sans 400 | 16 / 145% |
 | Body/Medium | Instrument Sans 400 | 14 / 145% |
 | Body/Medium Strong | Instrument Sans 500 | 14 / 145% |
 | Body/Small | Instrument Sans 400 | 12 / 140% |
 | Body/Small Strong | Instrument Sans 500 | 12 / 140% |
+| Label/XSmall | Instrument Sans 400 | 11 / 140% |
 | Label/XSmall Strong | Instrument Sans 500 | 11 / 140% |
 
-Make sure the naira sign (₦) renders in both fonts.
+In code: `text-display-large`, `text-display-small`, `text-body-large`, `text-label-xsmall`, etc. Make sure the naira sign (₦) renders in both fonts.
 
 ---
 
@@ -152,7 +132,7 @@ Build each once and reuse. Names match Figma.
 | Component | Base |
 |---|---|
 | Button | shadcn `button` (default = primary, outline, ghost; sizes md 36px / sm 32px; optional leading and trailing icon) |
-| StatusPill | shadcn `badge`: paid (green), on-hold (red), pending (yellow). Dot plus text, never colour alone |
+| StatusPill | shadcn `badge`: paid (green), on-hold (red), pending (orange, warning tokens). Dot plus text, never colour alone |
 | SummaryCard | custom: title on top, value, then a plain secondary sentence, not clickable |
 | Banner | custom, one component on every page (see Banner) |
 | PayoutsTable | shadcn `table` from 768px up (Recipient hidden below 1024px), a list below it. No row menu: an On hold row opens the drawer on click. Hovering a Reference cell (Paid rows) reveals a small round copy button at its right edge (also shown on keyboard focus, and always on touch screens); copying shows "Reference copied" and the icon briefly turns into a check. Proportional columns, all left-aligned |
@@ -252,7 +232,7 @@ Sending context does **not** change `hold`, the banner, the cards or the update 
 Colour follows the payout status, and the banner matches it:
 
 - **Red: On hold.** The On hold pill, and the banner while payouts are on hold (always filled solid red, never a tint). Failed uploads and sends also use the danger colours.
-- **Yellow: Pending.** The Pending pill on a payout that is due and not on hold (replaces "Scheduled").
+- **Orange (warning): Pending.** The Pending pill on a payout that is due and not on hold (replaces "Scheduled").
 - **Green:** Paid, and the resumed banner.
 - Blue is only used for the current step on the review timeline.
 
@@ -346,7 +326,7 @@ Same message as the day-one banner. **No amount, nothing sensitive**: lock scree
 - Sidebar hidden behind a menu button in the header (left sheet; closes after navigating).
 - Banner text wraps; the link stays visible.
 - Summary cards stack.
-- Payouts table becomes a grouped list in the same style as the table and cards (each group a square bordered container with lines between rows): sections "Upcoming" (On hold and Pending) and "Paid". Each row: a round status icon on a tinted background (Paid: check, green; On hold: pause, red; Pending: clock, yellow), the amount with "Status • reference" under it (reference only once paid), and the "Payout for" date on the right without the weekday (e.g. "27 Nov 2026"). On hold rows open the drawer.
+- Payouts table becomes a grouped list in the same style as the table and cards (each group a square bordered container with lines between rows): sections "Upcoming" (On hold and Pending) and "Paid". Each row: a round status icon on a tinted background (Paid: check, green; On hold: pause, red; Pending: clock, orange), the amount with "Status • reference" under it (reference only once paid), and the "Payout for" date on the right without the weekday (e.g. "27 Nov 2026"). On hold rows open the drawer.
 - The drawer is a full-screen sheet with a sticky header and footer.
 - Checked at 390px wide with the drawer open, light and dark. No horizontal scroll.
 
@@ -378,7 +358,7 @@ Demo script:
 - Every surface tells the same story: banner, both cards, the table row, the drawer and all three alerts
 - Payout balance equals the On hold rows
 - No amount in any alert
-- Colour follows status: On hold red (banner too), Pending yellow, Paid green
+- Colour follows status: On hold red (banner too), Pending orange, Paid green
 - Keyboard: drawer traps focus, Esc closes it, focus returns to the opener; forms fully usable by keyboard and labelled for screen readers
 - Screen readers: banner is `role="status"`, drawer is a labelled dialog, timeline steps announce done / in progress / upcoming, status pills have text
 - Light and dark; desktop (1024 to 1440px) and 390px mobile; no horizontal scroll

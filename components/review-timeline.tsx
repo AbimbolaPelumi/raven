@@ -37,18 +37,18 @@ export function ReviewTimeline({ steps }: { steps: TimelineStep[] }) {
             <span aria-hidden className="relative z-10 mt-0.5 size-5 shrink-0">
               {/* Ripple: one-way grow + fade (transform/opacity only), then rest. */}
               {s.state === "current" && (
-                <span className="absolute inset-0 rounded-full bg-info-dot opacity-0 motion-safe:animate-[ripple_2.4s_cubic-bezier(0.23,1,0.32,1)_infinite]" />
+                <span className="absolute inset-0 rounded-full bg-icon-info opacity-0 motion-safe:animate-[ripple_2.4s_cubic-bezier(0.23,1,0.32,1)_infinite]" />
               )}
               <span
                 className={cn(
                   "relative flex size-5 items-center justify-center rounded-full",
-                  s.state === "done" && "bg-brand-primary",
-                  s.state === "current" && "border-2 border-info-dot bg-bg-base",
-                  s.state === "upcoming" && "border border-border-strong bg-bg-base"
+                  s.state === "done" && "bg-bg-inverse",
+                  s.state === "current" && "border-2 border-icon-info bg-bg-default",
+                  s.state === "upcoming" && "border border-border-strong bg-bg-default"
                 )}
               >
                 {s.state === "done" && <Check className="size-3 text-icon-inverse" strokeWidth={2.5} />}
-                {s.state === "current" && <span className="size-2 rounded-full bg-info-dot" />}
+                {s.state === "current" && <span className="size-2 rounded-full bg-icon-info" />}
               </span>
             </span>
             <div className="min-w-0 text-body-medium">

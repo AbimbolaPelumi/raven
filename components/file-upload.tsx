@@ -29,19 +29,19 @@ export function FileRow({
     <li
       className={cn(
         "flex flex-col gap-2 border px-3 py-2.5",
-        failed ? "border-danger-dot bg-danger-bg" : "border-border-default bg-bg-base"
+        failed ? "border-critical bg-bg-critical-subtle" : "border-border-default bg-bg-default"
       )}
     >
       <div className="flex items-center gap-2.5">
         <FileText
-          className={cn("size-4 shrink-0", failed ? "text-icon-danger" : "text-icon-secondary")}
+          className={cn("size-4 shrink-0", failed ? "text-icon-critical" : "text-icon-secondary")}
           strokeWidth={1.75}
           aria-hidden
         />
         <span
           className={cn(
             "min-w-0 flex-1 truncate text-body-medium",
-            failed ? "text-danger-text" : "text-text-primary"
+            failed ? "text-text-critical" : "text-text-primary"
           )}
         >
           {file.name}
@@ -67,17 +67,17 @@ export function FileRow({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={file.progress}
-          className="h-1 w-full bg-bg-secondary"
+          className="h-1 w-full bg-bg-emphasis"
         >
           <div
-            className="h-full bg-brand-primary transition-[width] duration-150"
+            className="h-full bg-bg-inverse transition-[width] duration-150"
             style={{ width: `${file.progress}%` }}
           />
         </div>
       )}
 
       {failed && (
-        <div className="flex items-center justify-between gap-3 text-body-small text-danger-text">
+        <div className="flex items-center justify-between gap-3 text-body-small text-text-critical">
           <span role="alert">{file.error}</span>
           {file.retryable && !locked && (
             <button
@@ -134,7 +134,7 @@ export function DropZone({ locked, label }: { locked: boolean; label: string }) 
     >
       <Upload className="size-5 text-icon-secondary" strokeWidth={1.75} aria-hidden />
       <p className="text-body-medium text-text-primary">
-        Drop files here or <span className="text-brand-text underline underline-offset-2">browse</span>
+        Drop files here or <span className="text-text-primary underline underline-offset-2">browse</span>
       </p>
       <p className="text-body-small text-text-tertiary">PDF, JPG or PNG, up to 10MB each</p>
       <input

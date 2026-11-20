@@ -46,7 +46,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   }, [drawerOpen, holdParam, hold, router, pathname])
 
   return (
-    <div className="flex min-h-screen bg-bg-base">
+    <div className="flex min-h-screen bg-bg-default">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar and banner stay pinned while the page scrolls. */}
@@ -67,7 +67,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   // useSearchParams needs a Suspense boundary for static rendering.
   return (
-    <Suspense fallback={<div className="min-h-screen bg-bg-base" />}>
+    <Suspense fallback={<div className="min-h-screen bg-bg-default" />}>
       <Shell>{children}</Shell>
     </Suspense>
   )

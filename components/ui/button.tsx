@@ -5,14 +5,14 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap text-body-medium-strong transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary disabled:pointer-events-none disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap text-body-medium-strong transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus disabled:pointer-events-none disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default:
-          "bg-brand-primary text-brand-on hover:bg-brand-primary/90 disabled:bg-bg-muted disabled:text-text-disabled",
+          "bg-bg-inverse text-text-inverse hover:bg-bg-inverse/90 disabled:bg-bg-muted disabled:text-text-disabled",
         outline:
-          "border border-border-default bg-bg-base text-text-primary hover:bg-bg-subtle disabled:text-text-disabled",
+          "border border-border-default bg-bg-default text-text-primary hover:bg-bg-subtle disabled:text-text-disabled",
         ghost:
           "bg-transparent text-text-primary hover:bg-bg-subtle disabled:text-text-disabled",
       },
