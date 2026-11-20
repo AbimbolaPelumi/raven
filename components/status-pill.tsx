@@ -4,13 +4,13 @@ import type { PayoutStatus } from "@/lib/proto"
 const LABEL: Record<PayoutStatus, string> = {
   paid: "Paid",
   "on-hold": "On hold",
-  scheduled: "Scheduled",
+  pending: "Pending",
 }
 
 const DOT: Record<PayoutStatus, string> = {
   paid: "bg-success-dot",
-  "on-hold": "bg-info-dot",
-  scheduled: "bg-text-tertiary",
+  "on-hold": "bg-hold-dot",
+  pending: "bg-pending-dot",
 }
 
 /** Status is always conveyed by text, not colour alone. */
@@ -33,7 +33,7 @@ const PAYMENT_LABEL: Record<PaymentStatus, string> = {
 
 const PAYMENT_DOT: Record<PaymentStatus, string> = {
   succeeded: "bg-success-dot",
-  refunded: "bg-text-tertiary",
+  refunded: "bg-info-dot",
   failed: "bg-danger-dot",
 }
 

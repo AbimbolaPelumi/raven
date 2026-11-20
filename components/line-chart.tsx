@@ -49,7 +49,8 @@ function useWidth() {
 }
 
 /**
- * Dependency-free SVG line chart. Current period is solid, previous is dashed.
+ * Dependency-free SVG line chart: current period in brand blue, previous period
+ * in light grey, dashed average line, dashed grid.
  * The full variant has axes and a tooltip that follows the pointer or the
  * arrow keys; every value is also in a visually hidden table.
  */
@@ -78,6 +79,7 @@ export function LineChart({
   const path = (pts: ChartPoint[]) =>
     pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(p.value).toFixed(1)}`).join(" ")
 
+  const avg = n ? data.reduce((s, d) => s + d.value, 0) / n : 0
   const ticks = useMemo(() => [0, 1, 2, 3, 4].map((t) => (maxVal * t) / 4), [maxVal])
   const xTickIdx = n > 2 ? [0, Math.floor((n - 1) / 2), n - 1] : n === 2 ? [0, 1] : [0]
 
@@ -130,6 +132,7 @@ export function LineChart({
                   y2={y(t)}
                   className="stroke-border-default"
                   strokeWidth={1}
+                  strokeDasharray="2 3"
                 />
                 <text
                   x={pad.l - 8}
@@ -141,6 +144,20 @@ export function LineChart({
                   {formatAxis(t)}
                 </text>
               </g>
+            ))}
+
+          {full &&
+            xTickIdx.map((i) => (
+              <line
+                key={`v${i}`}
+                x1={x(i)}
+                x2={x(i)}
+                y1={pad.t}
+                y2={pad.t + innerH}
+                className="stroke-border-default"
+                strokeWidth={1}
+                strokeDasharray="2 3"
+              />
             ))}
 
           {full &&
@@ -156,17 +173,23 @@ export function LineChart({
               </text>
             ))}
 
-          {/* soft area under the current line */}
-          <path
-            d={`${path(data)} L${x(n - 1).toFixed(1)} ${y(0)} L${x(0).toFixed(1)} ${y(0)} Z`}
-            className="fill-info-strong/10"
-          />
           {previous && (
             <path
               d={path(previous)}
               fill="none"
-              className="stroke-text-tertiary"
+              className="stroke-border-strong"
               strokeWidth={1.5}
+              strokeLinejoin="round"
+            />
+          )}
+          {full && (
+            <line
+              x1={pad.l}
+              x2={width - pad.r}
+              y1={y(avg)}
+              y2={y(avg)}
+              className="stroke-text-tertiary"
+              strokeWidth={1}
               strokeDasharray="4 4"
             />
           )}
@@ -174,7 +197,7 @@ export function LineChart({
             d={path(data)}
             fill="none"
             className="stroke-info-strong"
-            strokeWidth={full ? 2 : 1.5}
+            strokeWidth={1.5}
             strokeLinejoin="round"
           />
 
@@ -188,7 +211,7 @@ export function LineChart({
                 className="stroke-border-strong"
               />
               {prev && (
-                <circle cx={x(active)} cy={y(prev.value)} r={3.5} className="fill-text-tertiary" />
+                <circle cx={x(active)} cy={y(prev.value)} r={3.5} className="fill-border-strong" />
               )}
               <circle
                 cx={x(active)}
@@ -213,7 +236,7 @@ export function LineChart({
           <p className="text-body-small-strong text-text-primary">{cur.label}</p>
           <p className="mt-1.5 flex items-center justify-between gap-4">
             <span className="flex items-center gap-1.5 text-text-secondary">
-              <span aria-hidden className="size-2 rounded-full bg-info-strong" />
+              <span aria-hidden className="size-2 bg-info-strong" />
               Current
             </span>
             <span className="text-text-primary">{format(cur.value)}</span>
@@ -221,7 +244,7 @@ export function LineChart({
           {prev && (
             <p className="mt-1 flex items-center justify-between gap-4">
               <span className="flex items-center gap-1.5 text-text-secondary">
-                <span aria-hidden className="size-2 rounded-full bg-text-tertiary" />
+                <span aria-hidden className="size-2 bg-border-strong" />
                 {prev.label}
               </span>
               <span className="text-text-primary">{format(prev.value)}</span>
@@ -229,10 +252,7 @@ export function LineChart({
           )}
           {tipChange !== null && (
             <p
-              className={cn(
-                "mt-1.5 text-body-small-strong",
-                tipChange >= 0 ? "text-success-text" : "text-danger-text"
-              )}
+              className="mt-1.5 text-body-small text-text-secondary"
             >
               {tipChange >= 0 ? "+" : "-"}
               {Math.abs(tipChange * 100).toFixed(Math.abs(tipChange) >= 1 ? 0 : 1)}% vs previous

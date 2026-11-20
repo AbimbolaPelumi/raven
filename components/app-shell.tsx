@@ -49,11 +49,14 @@ function Shell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-bg-base">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Header />
-        <Banner
-          banner={banner}
-          onAction={(a) => (a === "dismiss" ? dismissBanner() : openDrawer())}
-        />
+        {/* Top bar and banner stay pinned while the page scrolls. */}
+        <div className="sticky top-0 z-30">
+          <Header />
+          <Banner
+            banner={banner}
+            onAction={(a) => (a === "dismiss" ? dismissBanner() : openDrawer())}
+          />
+        </div>
         <main className="flex min-w-0 flex-col gap-6 p-4 md:p-6">{children}</main>
       </div>
       <HoldDrawer />

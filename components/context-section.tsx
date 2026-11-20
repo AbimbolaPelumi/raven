@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { CircleAlert, Link2, Loader2 } from "lucide-react"
+import { CircleAlert, Loader2 } from "lucide-react"
 
 import { FileField, FileRow } from "@/components/file-upload"
 import { Button } from "@/components/ui/button"
@@ -21,12 +21,6 @@ export function ContextSummary({ context }: { context: ContextNote }) {
       <p className="text-body-small text-text-secondary">Sent {fmtDateTime(context.at)}</p>
       {context.note && (
         <p className="break-words whitespace-pre-wrap text-text-primary">{context.note}</p>
-      )}
-      {context.link && (
-        <p className="flex min-w-0 items-center gap-1.5 text-text-primary">
-          <Link2 className="size-4 shrink-0 text-icon-secondary" strokeWidth={1.75} aria-hidden />
-          <span className="truncate">{context.link}</span>
-        </p>
       )}
       {context.files.length > 0 && (
         <ul className="flex flex-col gap-2" aria-label="Files you sent">
@@ -80,7 +74,7 @@ export function ContextSection() {
       ) : !open ? (
         <>
           <p className="text-body-medium text-text-secondary">
-            If you know why your sales went up, tell us. It can help us finish the review.
+            If something recent explains the activity on your account, you can tell us.
           </p>
           <Button ref={triggerRef} variant="outline" className="w-fit" onClick={openContext}>
             Tell us what happened
@@ -95,12 +89,12 @@ export function ContextSection() {
           }}
         >
           <p className="text-body-medium text-text-secondary">
-            If you know why your sales went up, tell us. It can help us finish the review.
+            If something recent explains the activity on your account, you can tell us.
           </p>
 
           <fieldset className="flex flex-col gap-2" disabled={sending}>
             <legend className="mb-2 text-body-medium text-text-primary">
-              What caused the increase?
+              What might explain it?
             </legend>
             {CONTEXT_CHOICES.map((c) => {
               const checked = form.choice === c
@@ -148,31 +142,12 @@ export function ContextSection() {
               value={form.note}
               disabled={sending}
               onChange={(e) => setForm({ note: e.target.value })}
-              placeholder="For example, we ran a Black Friday sale on Instagram"
+              placeholder="Anything that gives us context"
               className="min-h-24"
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="flex items-baseline justify-between text-body-medium">
-              <Label htmlFor="context-link" className="text-body-medium text-text-primary">
-                Link
-              </Label>
-              <span className="text-text-tertiary">Optional</span>
-            </div>
-            <input
-              id="context-link"
-              type="url"
-              inputMode="url"
-              value={form.link}
-              disabled={sending}
-              onChange={(e) => setForm({ link: e.target.value })}
-              placeholder="e.g. a link to the campaign"
-              className="h-10 w-full border border-border-default bg-bg-base px-3 text-body-medium text-text-primary transition-colors outline-none placeholder:text-text-tertiary hover:border-border-strong focus-visible:border-text-primary disabled:bg-bg-subtle"
-            />
-          </div>
-
-          <FileField label="Files" locked={sending} />
+          <FileField label="Attachments" locked={sending} />
 
           {sendError && (
             <p
@@ -194,7 +169,7 @@ export function ContextSection() {
               aria-busy={sending}
               leadingIcon={sending ? <Loader2 className="animate-spin" /> : undefined}
             >
-              Send to review team
+              Submit
             </Button>
           </div>
         </form>

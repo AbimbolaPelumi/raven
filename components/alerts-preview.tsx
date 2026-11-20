@@ -140,9 +140,9 @@ export function AlertsPreview() {
                 className="min-h-0 flex-1 overflow-y-auto bg-white"
                 onClick={(e) => {
                   const a = (e.target as HTMLElement).closest("a")
-                  if (!a) return
+                  if (!a || !a.dataset.internal) return
                   e.preventDefault()
-                  if (a.dataset.internal) go()
+                  go()
                 }}
                 dangerouslySetInnerHTML={{ __html: holdEmailHtml("hold-paused") }}
               />

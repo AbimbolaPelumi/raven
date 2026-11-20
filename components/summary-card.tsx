@@ -1,14 +1,14 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { StatusPill } from "@/components/status-pill"
-import type { PayoutStatus } from "@/lib/proto"
 import { cn } from "@/lib/utils"
+
+
 
 /**
  * Summary card. Mirrors Figma component "Summary card" (42:1219):
  * props value, label, description, link, showDescription, showLink, tone,
- * plus an optional status pill.
+ * Description is a plain secondary sentence.
  * Tone "muted" is for a value that is unavailable or empty.
  */
 const valueVariants = cva("text-heading-large", {
@@ -33,8 +33,6 @@ interface SummaryCardProps
   showDescription?: boolean
   /** Defaults to true when a link is given. */
   showLink?: boolean
-  /** Optional status pill next to the label (e.g. On hold). */
-  status?: PayoutStatus
   /** Makes the whole card a button (e.g. to open review details). */
   onActivate?: () => void
 }
@@ -48,7 +46,6 @@ function SummaryCard({
   showDescription = Boolean(description),
   showLink = Boolean(link),
   tone,
-  status,
   onActivate,
   className,
   ...props
@@ -77,15 +74,15 @@ function SummaryCard({
       )}
       {...props}
     >
-      <div className="w-full p-6">
-        <p className={valueVariants({ tone })}>{value}</p>
-      </div>
-      <div className="flex w-full flex-col gap-0.5 px-6 pb-5 text-body-medium">
-        <div className="flex items-center gap-2">
-          <p className="text-text-primary">{label}</p>
-          {status && <StatusPill status={status} />}
+      {/* Title on top, value, then the status line. */}
+      <div className="flex w-full flex-col gap-3 p-6 text-body-medium">
+        <p className="text-text-primary">{label}</p>
+        <div className="flex flex-col gap-1">
+          <p className={valueVariants({ tone })}>{value}</p>
+          {showDescription && (
+            <p className="text-text-secondary">{description}</p>
+          )}
         </div>
-        {showDescription && <p className="text-text-secondary">{description}</p>}
         {showLink && (
           <a href={href} className="w-fit text-brand-text hover:underline">
             {link}

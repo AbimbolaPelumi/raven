@@ -1,8 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { CircleAlert, CircleCheck, Loader2, X } from "lucide-react"
-import { toast } from "sonner"
 
 import { ContextSection } from "@/components/context-section"
 import { FileField, FileRow } from "@/components/file-upload"
@@ -13,9 +12,10 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/
 import { Textarea } from "@/components/ui/textarea"
 import {
   HOLD_REF,
+  SUPPORT_MAILTO,
   HOLD_STARTED,
   NEXT_PAYOUT_DAY,
-  UPDATE_BY,
+  updateWithin,
   derive,
   fmtDate,
   fmtDateTime,
@@ -26,7 +26,6 @@ import {
 import { takeOpener, useProto } from "@/lib/store"
 import { cn } from "@/lib/utils"
 
-const SUPPORT_TEXT = `Hi, I have a question about my payout review (reference ${HOLD_REF}).\n\n`
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -84,7 +83,6 @@ export function HoldDrawer() {
   const now = useProto((s) => s.now)
   const bannerDismissed = useProto((s) => s.bannerDismissed)
   const drawerOpen = useProto((s) => s.drawerOpen)
-  const view = useProto((s) => s.drawerView)
   const form = useProto((s) => s.form)
   const sending = useProto((s) => s.sending)
   const sendError = useProto((s) => s.sendError)
@@ -92,31 +90,25 @@ export function HoldDrawer() {
   const context = useProto((s) => s.context)
   const resumedAt = useProto((s) => s.resumedAt)
   const closeDrawer = useProto((s) => s.closeDrawer)
-  const setDrawerView = useProto((s) => s.setDrawerView)
   const dismissSendError = useProto((s) => s.dismissSendError)
   const setForm = useProto((s) => s.setForm)
   const send = useProto((s) => s.send)
-
-  const [supportText, setSupportText] = useState(SUPPORT_TEXT)
 
   const vm = useMemo(() => derive({ hold, now, bannerDismissed }), [hold, now, bannerDismissed])
 
   const open = drawerOpen && hold !== "none"
   const needed = hold === "info-needed"
   const resumed = hold === "resumed"
-  const support = view === "support"
-  const updateBy = fmtDayShort(UPDATE_BY)
+  const updateIn = updateWithin(now)
 
   const busy = form.files.some((f) => f.status !== "done")
   const canSend = needed && form.note.trim().length > 0 && !busy && !sending
 
-  const title = support
-    ? "Contact support"
-    : resumed
-      ? "Hold lifted"
-      : needed
-        ? "More information needed"
-        : "Payouts under review"
+  const title = resumed
+    ? "Hold lifted"
+    : needed
+      ? "We need a little more information"
+      : "Payouts paused"
 
   const steps: TimelineStep[] = [
     {
@@ -130,8 +122,8 @@ export function HoldDrawer() {
     ...(submission
       ? [{ title: "You sent details", detail: `${fmtDayShort(submission.at)}, ${fmtTime(submission.at)}`, state: "done" as const }]
       : []),
-    { title: "Under review", detail: "We're checking your recent activity", state: "current" },
-    { title: "Next update", detail: `By ${updateBy}`, state: "upcoming" },
+    { title: "Reviewing account activity", detail: "We're checking recent activity on your account", state: "current" },
+    { title: "Next update", detail: updateIn[0].toUpperCase() + updateIn.slice(1), state: "upcoming" },
   ]
 
   return (
@@ -139,7 +131,6 @@ export function HoldDrawer() {
       open={open}
       onOpenChange={(o) => {
         if (!o) closeDrawer()
-        else setSupportText(SUPPORT_TEXT)
       }}
     >
       <SheetContent
@@ -171,30 +162,15 @@ export function HoldDrawer() {
         <SheetDescription className="sr-only">
           {needed
             ? "We need more information to finish our review."
-            : `Your payouts are paused for review. We'll update you by ${updateBy}.`}
+            : `Your payouts are paused while we review recent activity on your account. We'll update you ${updateIn}.`}
         </SheetDescription>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4 md:px-6">
-          {support ? (
-            <div className="flex flex-col gap-2 py-6">
-              <Label htmlFor="support-message" className="text-body-medium text-text-primary">
-                Your message
-              </Label>
-              <Textarea
-                id="support-message"
-                value={supportText}
-                onChange={(e) => setSupportText(e.target.value)}
-                className="min-h-40"
-              />
-              <p className="text-body-small text-text-secondary">
-                Your hold reference is included so support can find your review.
-              </p>
-            </div>
-          ) : resumed ? (
+          {resumed ? (
             <>
               <div className="flex flex-col gap-1 pt-6 pb-6">
                 <p className="text-heading-large text-text-primary">{fmtNaira(vm.balanceAmount)}</p>
-                <p className="text-body-medium text-text-secondary">Payout scheduled</p>
+                <p className="text-body-medium text-text-secondary">Payout pending</p>
               </div>
               <Section>
                 <dl className="flex flex-col gap-4">
@@ -211,49 +187,30 @@ export function HoldDrawer() {
             </>
           ) : needed ? (
             <>
-              <div className="flex flex-col gap-4 py-6 text-body-medium">
-                <div>
-                  <h3 className="text-body-medium-strong text-text-primary">What we need</h3>
-                  <p className="text-text-secondary">
-                    Tell us what caused the recent increase in activity, and add anything that shows it.
+              <div className="flex flex-col gap-5 py-6">
+                <div className="flex flex-col gap-2 text-body-medium text-text-primary">
+                  <p>
+                    Your payouts are still on hold while we review recent activity on your
+                    account. Please provide the information below.
                   </p>
+                  <p>You&apos;ll receive an update within 24 hrs of receiving your response.</p>
                 </div>
-                <div>
-                  <h3 className="text-body-medium-strong text-text-primary">Why</h3>
-                  <p className="text-text-secondary">
-                    This helps us confirm the increase came from real customers.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-body-medium-strong text-text-primary">After you send it</h3>
-                  <p className="text-text-secondary">
-                    We&apos;ll update you within one working day of receiving it.
-                  </p>
-                </div>
-              </div>
-              <Section title="Your reply">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="hold-reason" className="text-body-medium text-text-primary">
-                    What caused the increase?
+                    What&apos;s changed in your business recently?
                   </Label>
-                  {context && (
-                    <p id="hold-reason-hint" className="text-body-small text-text-secondary">
-                      We&apos;ve added what you already told us. Edit it if you like.
-                    </p>
-                  )}
                   <Textarea
                     id="hold-reason"
-                    aria-describedby={context ? "hold-reason-hint" : undefined}
                     value={form.note}
                     disabled={sending}
                     onChange={(e) => setForm({ note: e.target.value })}
-                    placeholder="For example, a sale, a campaign or a large order"
+                    placeholder="For example, a promotion, a new product or a change in how you sell"
                     className="min-h-28"
                   />
                 </div>
-                <FileField label="Supporting files" locked={sending} />
+                <FileField label="Attachments" locked={sending} />
                 {sendError && <SendError onDismiss={dismissSendError} />}
-              </Section>
+              </div>
             </>
           ) : (
             <>
@@ -264,7 +221,7 @@ export function HoldDrawer() {
                 </p>
                 <p className="text-body-medium text-text-primary">{vm.dueLine}</p>
                 <p className="text-body-medium text-text-secondary">
-                  New sales are added to your balance and paid out after the review.
+                  You can keep accepting payments as usual, and new sales are paid out after the review.
                 </p>
               </div>
 
@@ -273,7 +230,6 @@ export function HoldDrawer() {
                 <dl className="flex flex-col gap-3">
                   <DetailRow label="Paused since" value={fmtDateTime(HOLD_STARTED)} />
                   <DetailRow label="Reason" value="Unusual activity on your account" />
-                  <DetailRow label="Action needed" value="None" />
                   <DetailRow label="Reference" value={HOLD_REF} />
                 </dl>
               </Section>
@@ -309,40 +265,15 @@ export function HoldDrawer() {
                 </div>
               )}
 
-              {/* 5. What happens next */}
-              <Section title="What happens next">
-                <ul className="flex list-disc flex-col gap-1.5 pl-5 text-body-medium text-text-secondary marker:text-text-tertiary">
-                  <li>You can keep accepting payments as usual.</li>
-                  <li>We&apos;ll update you by {updateBy}, even if we&apos;re still reviewing.</li>
-                  <li>If we need anything from you, we&apos;ll ask.</li>
-                  <li>No update by then? Contact support and we&apos;ll prioritise your review.</li>
-                </ul>
-              </Section>
             </>
           )}
         </div>
 
         <footer className="flex shrink-0 items-center justify-between gap-2 border-t border-border-default px-4 py-4 md:px-6">
-          {support ? (
-            <>
-              <Button variant="ghost" onClick={() => setDrawerView("summary")}>
-                Back
-              </Button>
-              <Button
-                disabled={!supportText.trim()}
-                onClick={() => {
-                  toast.success("Message sent. We'll reply by email.")
-                  setSupportText(SUPPORT_TEXT)
-                  setDrawerView("summary")
-                }}
-              >
-                Send message
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" className="-ml-2" onClick={() => setDrawerView("support")}>
-                Contact support
+          <>
+              {/* Opens her email app: to support, subject and body (with the reference) pre-filled. */}
+              <Button variant="ghost" className="-ml-2" asChild>
+                <a href={SUPPORT_MAILTO}>Contact support</a>
               </Button>
               {needed ? (
                 <div className="flex gap-2">
@@ -363,8 +294,7 @@ export function HoldDrawer() {
                   Close
                 </Button>
               )}
-            </>
-          )}
+          </>
         </footer>
       </SheetContent>
     </Sheet>

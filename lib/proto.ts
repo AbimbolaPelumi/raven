@@ -6,8 +6,9 @@
  *
  * Money model (same words everywhere):
  *  - Payout balance: money from sales that hasn't been paid out yet.
- *  - Payout: a transfer to the bank. Each day's sales pay out automatically on
- *    the next working day.
+ *  - Payout: a transfer to the bank for one day's sales, paid automatically on
+ *    the next working day. Days are never summed into one payout, so every
+ *    payout reconciles to exactly one day of sales.
  *  - On hold: a payout that would normally go out but is paused. Nothing leaves
  *    the balance; new sales keep joining it and pay out after the review.
  */
@@ -20,7 +21,7 @@
  * resumed     hold cleared
  */
 export type HoldState = "none" | "paused" | "info-needed" | "reviewing" | "resumed"
-export type PayoutStatus = "paid" | "on-hold" | "scheduled"
+export type PayoutStatus = "paid" | "on-hold" | "pending"
 
 export interface UploadFile {
   id: string
@@ -69,15 +70,19 @@ export interface Submission {
 export interface ContextNote {
   choice: string
   note: string
-  link: string
   files: UploadFile[]
   at: string
 }
 
+/**
+ * Neutral on purpose: the app never tells her what the unusual activity was
+ * (no "sales went up", no "increase"), so the options are ordinary business
+ * events, not explanations of a spike.
+ */
 export const CONTEXT_CHOICES = [
-  "A promotion or sale",
-  "Seasonal demand",
-  "A new product or launch",
+  "A promotion or campaign",
+  "A new product or service",
+  "A change to how I sell",
   "Something else",
 ] as const
 
@@ -95,10 +100,23 @@ export const NEXT_DAY = "2026-11-28T09:30"
 export const CLEARED_NOW = "2026-11-28T10:05"
 /** The payout Friday's sales were due in (and the weekend's would join). */
 export const NEXT_PAYOUT_DAY = "2026-11-30"
-/** Raven promises an update by this date, not a release. */
-export const UPDATE_BY = "2026-11-30"
+/**
+ * Raven promises an update (not a release) within 24 hrs of the hold, shown
+ * in hours rather than a date. Live surfaces count down to this moment; the
+ * alerts, sent at the hold, say "within 24 hrs". The payout itself is still
+ * due Mon, 30 Nov (NEXT_PAYOUT_DAY).
+ */
+export const UPDATE_WITHIN_HRS = 24
+export const UPDATE_DUE = addMinutes(HOLD_STARTED, UPDATE_WITHIN_HRS * 60)
 export const HOLD_AMOUNT = 3_457_350
 export const HOLD_HREF = "/payouts?hold=open"
+export const SUPPORT_EMAIL = "support@raven.ng"
+/** Opens her email app with the recipient, subject and body pre-filled. */
+export const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
+  `Paused payouts (${HOLD_REF})`
+)}&body=${encodeURIComponent(
+  `Hi Raven support,\n\nI have a question about my paused payouts. My reference is ${HOLD_REF}.\n\n`
+)}`
 export const MAX_FILE_BYTES = 10 * 1024 * 1024
 
 /* ------------------------------------------------------------------ */
@@ -118,6 +136,12 @@ function parse(iso: string) {
 /** `Fri, 27 Nov 2026` */
 export function fmtDate(iso: string) {
   return `${fmtDayShort(iso)} ${parse(iso).y}`
+}
+
+/** `27 Nov 2026` (no weekday; used where space is tight, e.g. the mobile list) */
+export function fmtDateShort(iso: string) {
+  const { y, m, day } = parse(iso)
+  return `${day} ${MONTHS[m - 1]} ${y}`
 }
 
 /** `Fri, 27 Nov` */
@@ -150,6 +174,17 @@ export function addMinutes(iso: string, minutes: number) {
   return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}T${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`
 }
 
+function toMs(iso: string) {
+  const { y, m, day, hh, mm } = parse(iso)
+  return Date.UTC(y, m - 1, day, hh, mm)
+}
+
+/** "within 24 hrs", counting down to the promised update; never below 1 hr. */
+export function updateWithin(now: string) {
+  const hrs = Math.max(1, Math.ceil((toMs(UPDATE_DUE) - toMs(now)) / 3_600_000))
+  return `within ${hrs} ${hrs === 1 ? "hr" : "hrs"}`
+}
+
 export function fmtNaira(n: number) {
   return `₦${n.toLocaleString("en-US", {
     minimumFractionDigits: 2,
@@ -168,11 +203,12 @@ export function fmtBytes(n: number) {
 /* ------------------------------------------------------------------ */
 
 export const ALERT = {
-  pushTitle: "Payouts paused for review",
-  pushBody: `No action needed. We'll update you by ${fmtDayShort(UPDATE_BY)}.`,
-  sms: `Raven: Your payouts are paused for review. No action needed. We'll update you by ${fmtDayShort(UPDATE_BY)}. Details: raven.ng/h/${HOLD_REF}`,
-  emailSubject: "Your payouts are paused for review",
-  emailPreview: `No action needed. We'll update you by ${fmtDayShort(UPDATE_BY)}.`,
+  // The account activity is under review, not the payouts: payouts are paused.
+  pushTitle: "Payouts paused",
+  pushBody: `We're reviewing recent activity on your account. No action needed. We'll update you within ${UPDATE_WITHIN_HRS} hrs.`,
+  sms: `Raven: Your payouts are paused while we review recent activity on your account. No action needed. We'll update you within ${UPDATE_WITHIN_HRS} hrs. Details: raven.ng/h/${HOLD_REF}`,
+  emailSubject: "Your payouts are paused",
+  emailPreview: `No action needed. We'll update you within ${UPDATE_WITHIN_HRS} hrs.`,
 }
 
 /* ------------------------------------------------------------------ */
@@ -210,32 +246,39 @@ export function salesFor(day: string, now: string): number | null | undefined {
   return SALES[day]
 }
 
-/** Paid payouts, newest first. Each pays out the previous working day's sales. */
-const PAID: { payoutDay: string; sales: string[]; ref: string }[] = [
-  { payoutDay: "2026-11-27", sales: ["2026-11-26"], ref: "PO-261127-0487" },
-  { payoutDay: "2026-11-26", sales: ["2026-11-25"], ref: "PO-261126-0451" },
-  { payoutDay: "2026-11-25", sales: ["2026-11-24"], ref: "PO-261125-0419" },
-  { payoutDay: "2026-11-24", sales: ["2026-11-23"], ref: "PO-261124-0388" },
-  { payoutDay: "2026-11-23", sales: ["2026-11-20", "2026-11-21", "2026-11-22"], ref: "PO-261123-0352" },
+/**
+ * One payout per sales day, never summed across days, so every payout
+ * reconciles to exactly one day of sales. A day's sales pay out on the next
+ * working day, so Fri, Sat and Sun each get their own payout on Monday.
+ * Paid payouts, newest sales day first.
+ */
+const PAID: { sales: string; payoutDay: string; ref: string }[] = [
+  { sales: "2026-11-26", payoutDay: "2026-11-27", ref: "PO-261127-0487" },
+  { sales: "2026-11-25", payoutDay: "2026-11-26", ref: "PO-261126-0451" },
+  { sales: "2026-11-24", payoutDay: "2026-11-25", ref: "PO-261125-0419" },
+  { sales: "2026-11-23", payoutDay: "2026-11-24", ref: "PO-261124-0388" },
+  { sales: "2026-11-22", payoutDay: "2026-11-23", ref: "PO-261123-0352" },
+  { sales: "2026-11-21", payoutDay: "2026-11-23", ref: "PO-261123-0351" },
+  { sales: "2026-11-20", payoutDay: "2026-11-23", ref: "PO-261123-0350" },
 ]
 
-/** Fri, Sat and Sun sales all pay out on Mon, 30 Nov. */
+/** Fri, Sat and Sun sales: three separate payouts, all due Mon, 30 Nov. */
 const UPCOMING_SALES_DAYS = ["2026-11-27", "2026-11-28", "2026-11-29"]
 
-/** "Fri, 27 Nov", "Fri, 27 Nov and Sat, 28 Nov", "Fri, 20 Nov to Sun, 22 Nov" */
+/** "Fri, 27 Nov" or "Fri, 27 Nov to Tue, 1 Dec": reads the same for 2 days or 20. */
 export function salesRange(days: string[]) {
   if (days.length === 1) return fmtDayShort(days[0])
-  if (days.length === 2) return `${fmtDayShort(days[0])} and ${fmtDayShort(days[1])}`
   return `${fmtDayShort(days[0])} to ${fmtDayShort(days[days.length - 1])}`
 }
 
 export interface PayoutRow {
   id: string
+  /** The sales day this payout is for. */
+  salesDay: string
+  /** When it goes (or went) out. Not shown in the table. */
   payoutDay: string
-  /** `Mon, 30 Nov 2026` */
+  /** "Payout for" column: `Fri, 27 Nov 2026` */
   label: string
-  /** `Fri, 27 Nov sales, so far` */
-  note: string
   status: PayoutStatus
   amount: number
   recipient: string
@@ -247,11 +290,12 @@ export interface PayoutRow {
 /* ------------------------------------------------------------------ */
 
 /**
- * info    blue tint: Raven is working on it, nothing to do
- * action  solid red: she needs to act (information required only)
+ * Banner colour follows the payout status (On hold is red):
+ * hold    solid red: payouts on hold, Raven is reviewing, nothing to do
+ * action  solid red: on hold and she needs to act (information required)
  * success solid green: payouts resumed
  */
-export type BannerTone = "info" | "action" | "success"
+export type BannerTone = "hold" | "action" | "success"
 export type BannerAction = "view" | "provide" | "dismiss"
 
 export interface BannerModel {
@@ -261,21 +305,24 @@ export interface BannerModel {
   actionLabel: string
 }
 
+/** Card status line: On hold (red), Pending (yellow) or No pending payout. */
+export type CardStatus = "on-hold" | "pending" | "none"
+
 export interface SummaryModel {
   value: string
   label: string
+  status: CardStatus
+  /** Plain sentence under the value, e.g. "You have 1 pending payout". */
   description: string
-  status?: PayoutStatus
 }
 
 export interface ViewModel {
   banner: BannerModel | null
-  balance: SummaryModel
   nextPayout: SummaryModel
   rows: PayoutRow[]
   /** Payout balance. Always equals the sum of the unpaid (On hold / Scheduled) rows. */
   balanceAmount: number
-  /** `Payout due Mon, 30 Nov 2026, from Fri, 27 Nov sales` */
+  /** `1 payout, for Fri, 27 Nov` or `5 payouts, for Fri, 27 Nov to Tue, 1 Dec` */
   dueLine: string
   onHold: boolean
 }
@@ -289,21 +336,20 @@ export function derive(input: { hold: HoldState; now: string; bannerDismissed: b
   const onHold = isHeld(hold)
   const today = dayOf(now)
 
-  // The upcoming payout: every sales day so far that pays out on Mon, 30 Nov.
+  // Upcoming payouts: one per sales day so far, each due Mon, 30 Nov.
   const salesDays = UPCOMING_SALES_DAYS.filter((d) => salesFor(d, now) != null)
   const balanceAmount = salesDays.reduce((s, d) => s + (salesFor(d, now) ?? 0), 0)
-  const soFar = salesDays.at(-1) === today
-  const upcomingStatus: PayoutStatus = onHold ? "on-hold" : "scheduled"
+  const upcomingStatus: PayoutStatus = onHold ? "on-hold" : "pending"
 
   const rows: PayoutRow[] = []
-  if (salesDays.length > 0) {
+  for (const d of [...salesDays].reverse()) {
     rows.push({
-      id: `payout-${NEXT_PAYOUT_DAY}`,
+      id: `payout-${d}`,
+      salesDay: d,
       payoutDay: NEXT_PAYOUT_DAY,
-      label: fmtDate(NEXT_PAYOUT_DAY),
-      note: `${salesRange(salesDays)} sales${soFar ? ", so far" : ""}`,
+      label: fmtDate(d),
       status: upcomingStatus,
-      amount: balanceAmount,
+      amount: salesFor(d, now) ?? 0,
       recipient: RECIPIENT,
       // No reference until a payout is actually sent (Paid only).
       reference: "-",
@@ -311,51 +357,44 @@ export function derive(input: { hold: HoldState; now: string; bannerDismissed: b
   }
   for (const p of PAID) {
     rows.push({
-      id: `payout-${p.payoutDay}`,
+      id: `payout-${p.sales}`,
+      salesDay: p.sales,
       payoutDay: p.payoutDay,
-      label: fmtDate(p.payoutDay),
-      note: `${salesRange(p.sales)} sales`,
+      label: fmtDate(p.sales),
       status: "paid",
-      amount: p.sales.reduce((s, d) => s + (SALES[d] ?? 0), 0),
+      amount: SALES[p.sales] ?? 0,
       recipient: RECIPIENT,
       reference: p.ref,
     })
   }
 
-  const balance: SummaryModel = {
-    value: fmtNaira(balanceAmount),
-    label: "Payout balance",
-    description: soFar ? "Includes today's sales so far" : "Sales not yet paid out",
-    status: upcomingStatus,
-  }
-
   const due = fmtDate(NEXT_PAYOUT_DAY)
-  let nextPayout: SummaryModel
-  if (hold === "paused" || hold === "reviewing") {
-    nextPayout = { value: "Under review", label: "Next payout", description: `Was due ${due}` }
-  } else if (hold === "info-needed") {
-    nextPayout = {
-      value: "Action required",
-      label: "Next payout",
-      description: "Send the details we asked for",
-    }
-  } else {
-    nextPayout = {
-      value: due,
-      label: "Next payout",
-      description: hold === "resumed" ? "Payouts are back on" : "Sent automatically on the next working day",
-    }
+  // One card: what the next payout is worth and where it stands.
+  const status: CardStatus = balanceAmount === 0 ? "none" : upcomingStatus
+  const count = salesDays.length
+  const payouts = `${count} ${count === 1 ? "payout" : "payouts"}`
+  const description =
+    status === "none"
+      ? "You have no pending payouts"
+      : onHold
+        ? `You have ${payouts} on hold`
+        : `You have ${count} pending ${count === 1 ? "payout" : "payouts"}, due ${due}`
+  const nextPayout: SummaryModel = {
+    value: fmtNaira(balanceAmount),
+    label: "Next payout",
+    status,
+    description,
   }
 
-  const updateBy = fmtDayShort(UPDATE_BY)
+  const updateIn = updateWithin(now)
   const dayTwo = today > HOLD_DAY
   let banner: BannerModel | null = null
   if (hold === "paused") {
     banner = {
-      tone: "info",
+      tone: "hold",
       text: dayTwo
-        ? `Payouts paused since ${fmtDate(HOLD_DAY)}. We're still reviewing. We'll update you by ${updateBy}.`
-        : `Payouts paused for review. No action needed. We'll update you by ${updateBy}.`,
+        ? `Payouts paused since ${fmtDate(HOLD_DAY)}. We're still reviewing. We'll update you ${updateIn}.`
+        : `Payouts paused while we review recent activity on your account. No action needed. We'll update you ${updateIn}.`,
       action: "view",
       actionLabel: "View details",
     }
@@ -368,8 +407,8 @@ export function derive(input: { hold: HoldState; now: string; bannerDismissed: b
     }
   } else if (hold === "reviewing") {
     banner = {
-      tone: "info",
-      text: `Details received. We'll update you by ${updateBy}.`,
+      tone: "hold",
+      text: `Details received. We'll update you within ${UPDATE_WITHIN_HRS} hrs.`,
       action: "view",
       actionLabel: "View details",
     }
@@ -382,7 +421,10 @@ export function derive(input: { hold: HoldState; now: string; bannerDismissed: b
     }
   }
 
-  const dueLine = `Payout due ${due}, from ${salesRange(salesDays.length ? salesDays : [HOLD_DAY])} sales`
+  // Count plus first-to-last day, so it scales however long the hold lasts.
+  // No due date: a held payout isn't due on any date until the review ends.
+  const n = Math.max(1, salesDays.length)
+  const dueLine = `${n} ${n === 1 ? "payout" : "payouts"}, for ${salesRange(salesDays.length ? salesDays : [HOLD_DAY])}`
 
-  return { banner, balance, nextPayout, rows, balanceAmount, dueLine, onHold }
+  return { banner, nextPayout, rows, balanceAmount, dueLine, onHold }
 }

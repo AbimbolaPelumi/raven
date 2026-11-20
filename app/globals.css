@@ -39,6 +39,11 @@
   --blue-500: #1f6feb;
   --blue-700: #1a5fcc;
   --blue-900: #10213d;
+  --yellow-100: #fef0c7;
+  --yellow-300: #fec84b;
+  --yellow-500: #f79009;
+  --yellow-700: #b54708;
+  --yellow-900: #3d2a07;
 }
 
 /* ------------------------------------------------------------------ */
@@ -78,6 +83,9 @@
   --info-dot: var(--blue-500);
   --info-text: var(--blue-700);
   --info-strong: var(--blue-500);
+  --pending-bg: var(--yellow-100);
+  --pending-dot: var(--yellow-500);
+  --pending-text: var(--yellow-700);
   --icon-primary: var(--gray-950);
   --icon-secondary: var(--gray-600);
   --icon-tertiary: var(--gray-500);
@@ -86,6 +94,7 @@
   --icon-info: var(--blue-700);
   --icon-success: var(--green-700);
   --icon-danger: var(--red-700);
+  --icon-pending: var(--yellow-700);
   --overlay: color-mix(in srgb, var(--gray-950) 40%, transparent);
 }
 
@@ -123,6 +132,9 @@
   --info-dot: var(--blue-500);
   --info-text: var(--blue-300);
   --info-strong: var(--blue-500);
+  --pending-bg: var(--yellow-900);
+  --pending-dot: var(--yellow-500);
+  --pending-text: var(--yellow-300);
   --icon-primary: var(--gray-50);
   --icon-secondary: var(--gray-400);
   --icon-tertiary: var(--gray-500);
@@ -131,6 +143,7 @@
   --icon-info: var(--blue-300);
   --icon-success: var(--green-300);
   --icon-danger: var(--red-300);
+  --icon-pending: var(--yellow-300);
   --overlay: color-mix(in srgb, var(--gray-950) 40%, transparent);
   color-scheme: dark;
 }
@@ -227,6 +240,9 @@
   --color-info-dot: var(--info-dot);
   --color-info-text: var(--info-text);
   --color-info-strong: var(--info-strong);
+  --color-pending-bg: var(--pending-bg);
+  --color-pending-dot: var(--pending-dot);
+  --color-pending-text: var(--pending-text);
   --color-icon-primary: var(--icon-primary);
   --color-icon-secondary: var(--icon-secondary);
   --color-icon-tertiary: var(--icon-tertiary);
@@ -235,6 +251,7 @@
   --color-icon-info: var(--icon-info);
   --color-icon-success: var(--icon-success);
   --color-icon-danger: var(--icon-danger);
+  --color-icon-pending: var(--icon-pending);
   --color-overlay: var(--overlay);
 }
 
@@ -323,14 +340,65 @@
   }
 }
 
-/* Current step on the review timeline: a slow, soft halo. */
-@keyframes ring-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--info-dot) 35%, transparent);
+/*
+ * Text link underline with a "comet" hover: the line sweeps out to the right,
+ * then sweeps back in from the left. Drawn as a 1px pseudo-element animated
+ * with transform only. Hover-capable pointers only; touch keeps a still line.
+ */
+@utility link-sweep {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    /* Just under the baseline, like a native underline. Below the line box it
+       ate into the banner's bottom padding and made it look shorter than the top. */
+    bottom: 3px;
+    height: 1px;
+    background: currentColor;
+    transform-origin: right;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    &:hover::after {
+      animation: link-sweep 560ms cubic-bezier(0.77, 0, 0.175, 1);
+    }
+  }
+}
+
+@keyframes link-sweep {
+  0% {
+    transform: scaleX(1);
+    transform-origin: right;
   }
   50% {
-    box-shadow: 0 0 0 5px color-mix(in srgb, var(--info-dot) 0%, transparent);
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+  50.01% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  100% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+/*
+ * Current step on the review timeline: a one-way ripple. Grows and fades in
+ * the first ~60% (ease-out comes from the animation's timing function), then
+ * rests until the next cycle. Transform and opacity only.
+ */
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  60%,
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
   }
 }
 

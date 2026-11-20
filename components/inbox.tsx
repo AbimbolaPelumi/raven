@@ -137,9 +137,10 @@ export function EmailView({ id }: { id: string }) {
           className="bg-white"
           onClick={(e) => {
             const a = (e.target as HTMLElement).closest("a")
-            if (!a) return
+            // mailto links (Contact support) go to the email app as normal.
+            if (!a || !a.dataset.internal) return
             e.preventDefault()
-            if (a.dataset.internal) router.push(a.getAttribute("href") ?? "/payouts")
+            router.push(a.getAttribute("href") ?? "/payouts")
           }}
           dangerouslySetInnerHTML={{ __html: holdEmailHtml(id === "info-needed" ? "info-needed" : "hold-paused") }}
         />

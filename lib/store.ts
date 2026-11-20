@@ -14,9 +14,8 @@ import {
   NEXT_PAYOUT_DAY,
   RESET_NOW,
   addMinutes,
-  UPDATE_BY,
+  UPDATE_WITHIN_HRS,
   fmtDate,
-  fmtDayShort,
   isHeld,
   type AppNotification,
   type ContextNote,
@@ -30,8 +29,7 @@ import {
 /** "system" follows the OS setting and updates live. */
 export type Theme = "light" | "dark" | "system"
 
-/** "support" is the pre-filled message to support, inside the drawer. */
-export type DrawerView = "summary" | "support"
+export type DrawerView = "summary"
 
 /**
  * One form, used by whichever is open: the optional "Expected this activity?"
@@ -40,7 +38,6 @@ export type DrawerView = "summary" | "support"
 export interface FormState {
   choice: string
   note: string
-  link: string
   files: UploadFile[]
 }
 
@@ -105,7 +102,7 @@ export interface ProtoState {
 }
 
 const INFO_BODY = "We need more information to finish our review."
-const EMPTY_FORM: FormState = { choice: "", note: "", link: "", files: [] }
+const EMPTY_FORM: FormState = { choice: "", note: "", files: [] }
 const ALLOWED = /\.(pdf|jpe?g|png)$/i
 /**
  * The element that opened the drawer. The drawer is opened from the store
@@ -124,7 +121,7 @@ const uid = (p: string) => `${p}-${Date.now().toString(36)}-${seq++}`
 
 /** What she already told us, as the starting text of an information reply. */
 function contextAsReply(c: ContextNote) {
-  return [c.choice + ".", c.note, c.link].filter((s) => s.trim()).join("\n")
+  return [c.choice + ".", c.note].filter((s) => s.trim()).join("\n")
 }
 
 export const useProto = create<ProtoState>()(
@@ -274,7 +271,7 @@ export const useProto = create<ProtoState>()(
                 id: "info-needed",
                 from: "Raven",
                 subject: "We need more information to finish our review",
-                preview: "Tell us what caused the recent increase in activity",
+                preview: "Tell us about the recent activity on your account",
                 at,
                 read: false,
               },
@@ -376,7 +373,6 @@ export const useProto = create<ProtoState>()(
               context: {
                 choice: s.form.choice,
                 note: s.form.note.trim(),
-                link: s.form.link.trim(),
                 files: s.form.files,
                 at,
               },
@@ -409,7 +405,7 @@ export const useProto = create<ProtoState>()(
               submission: { reason: s.form.note.trim(), files: s.form.files, at },
               form: EMPTY_FORM,
             })
-            toast.success(`Details received. We'll update you by ${fmtDayShort(UPDATE_BY)}.`)
+            toast.success(`Details received. We'll update you within ${UPDATE_WITHIN_HRS} hrs.`)
           }, 1400)
         },
 

@@ -22,7 +22,7 @@ const FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "paid", label: "Paid" },
   { value: "on-hold", label: "On hold" },
-  { value: "scheduled", label: "Scheduled" },
+  { value: "pending", label: "Pending" },
 ]
 
 export function PayoutsView() {
@@ -43,19 +43,11 @@ export function PayoutsView() {
     <>
       <h1 className="text-display-medium text-text-primary">Payouts</h1>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-        <SummaryCard
-          value={vm.balance.value}
-          label={vm.balance.label}
-          description={vm.balance.description}
-          status={vm.balance.status}
-        />
+      <div className="flex">
         <SummaryCard
           value={vm.nextPayout.value}
           label={vm.nextPayout.label}
           description={vm.nextPayout.description}
-          // While a review is running the card opens the review details.
-          onActivate={hold === "none" || hold === "resumed" ? undefined : () => openDrawer()}
         />
       </div>
 

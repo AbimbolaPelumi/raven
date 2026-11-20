@@ -1,4 +1,4 @@
-import { ALERT, HOLD_HREF, HOLD_REF, UPDATE_BY, fmtDayShort } from "@/lib/proto"
+import { ALERT, HOLD_HREF, HOLD_REF, SUPPORT_MAILTO, UPDATE_WITHIN_HRS } from "@/lib/proto"
 
 /**
  * Email-safe HTML: table layout, inline styles only, system fonts, no external
@@ -17,7 +17,7 @@ const COPY: Record<
     heading: ALERT.emailSubject,
     paragraphs: [
       "We're reviewing recent activity on your account, so your payouts are paused for now. Customers can still pay you, and new sales are added to your balance.",
-      `No action needed. We'll update you by ${fmtDayShort(UPDATE_BY)}.`,
+      `No action needed. We'll update you within ${UPDATE_WITHIN_HRS} hrs.`,
     ],
     cta: "View details",
     href: HOLD_HREF,
@@ -26,7 +26,7 @@ const COPY: Record<
   "info-needed": {
     heading: "We need more information to finish our review",
     paragraphs: [
-      "Tell us what caused the recent increase in activity, and add anything that shows it.",
+      "Tell us about the recent activity on your account, and add anything that supports it.",
       "Your payouts stay paused until we finish. Customers can still pay you.",
     ],
     cta: "Provide details",
@@ -68,7 +68,7 @@ export function holdEmailHtml(kind: HoldEmailKind = "hold-paused") {
         </tr>
         <tr>
           <td style="border-top:1px solid #d9d9d9;padding-top:16px;font-family:${font};font-size:13px;line-height:20px;color:#595959;">
-            Reference ${HOLD_REF} &middot; Questions? <a href="#" data-contact="true" style="color:#000000;text-decoration:underline;">Contact support</a>
+            Reference ${HOLD_REF} &middot; Questions? <a href="${SUPPORT_MAILTO}" style="color:#000000;text-decoration:underline;">Contact support</a>
           </td>
         </tr>
       </table>

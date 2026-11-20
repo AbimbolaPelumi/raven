@@ -83,7 +83,7 @@ export function FileRow({
             <button
               type="button"
               onClick={() => retryFile(file.id)}
-              className="cursor-pointer text-body-small-strong underline underline-offset-2 hover:no-underline"
+              className="cursor-pointer text-body-small-strong link-sweep"
             >
               Retry
             </button>

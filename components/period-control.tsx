@@ -1,9 +1,20 @@
 "use client"
 
-import { PERIODS, type Period } from "@/lib/dashboard"
-import { cn } from "@/lib/utils"
+import { CalendarDays, ChevronDown } from "lucide-react"
 
-/** Compact segmented control (7d / 30d / 90d). Same pattern as the theme control. */
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { PERIODS, type Period } from "@/lib/dashboard"
+
+const LABEL: Record<Period, string> = { 7: "Last 7 days", 30: "Last 30 days", 90: "Last 90 days" }
+
+/** Period picker: an outline dropdown button, same as the Payouts toolbar. */
 export function PeriodControl({
   value,
   onChange,
@@ -12,28 +23,26 @@ export function PeriodControl({
   onChange: (p: Period) => void
 }) {
   return (
-    <div
-      role="radiogroup"
-      aria-label="Period"
-      className="flex h-9 border border-border-default bg-bg-base"
-    >
-      {PERIODS.map((p) => (
-        <button
-          key={p}
-          type="button"
-          role="radio"
-          aria-checked={value === p}
-          onClick={() => onChange(p)}
-          className={cn(
-            "cursor-pointer px-3.5 text-body-medium-strong transition-colors",
-            value === p
-              ? "bg-brand-primary text-brand-on"
-              : "text-text-secondary hover:bg-bg-subtle hover:text-text-primary"
-          )}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          aria-label={`Period: ${LABEL[value]}`}
+          leadingIcon={<CalendarDays className="text-icon-primary" strokeWidth={1.75} />}
+          trailingIcon={<ChevronDown className="text-icon-primary" strokeWidth={1.75} />}
         >
-          {p}d
-        </button>
-      ))}
-    </div>
+          {LABEL[value]}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuRadioGroup value={String(value)} onValueChange={(v) => onChange(Number(v) as Period)}>
+          {PERIODS.map((p) => (
+            <DropdownMenuRadioItem key={p} value={String(p)}>
+              {LABEL[p]}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

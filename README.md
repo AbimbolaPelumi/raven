@@ -2,7 +2,7 @@
 
 A working prototype of the first 24 hours after a merchant's payouts are put on hold. Raven does
 the review: by default she has nothing to do, Raven promises a date for its next update, and she
-can add context if she knows why sales went up. Build spec: [SPEC.md](SPEC.md). All data is local
+can add context if she knows of anything that explains it. Build spec: [SPEC.md](SPEC.md). All data is local
 fixtures, there is no backend.
 
 ## Run
@@ -20,13 +20,13 @@ npm run build    # production build
 Press **Shift + D** to show or hide the demo panel (it is ignored while you are typing in a field).
 
 1. Normal Home (`/`) and Payouts, Friday afternoon
-2. **Place hold**: push notification, bell dot, blue banner. **Show alerts** previews the push,
+2. **Place hold**: push notification, bell dot, red banner, Next payout card On hold. **Show alerts** previews the push,
    SMS and email; each **Open** lands on `/payouts?hold=open` with the drawer open
 3. Drawer: what's on hold, progress, what happens next. Nothing to do
 4. "Tell us what happened": pick a reason, send. The timeline updates; nothing else changes
 5. **Next day**: day-two banner, the balance includes Saturday's sales
-6. Optional: **Request information** (the only red state), reply, **Submit**, banner back to blue
-7. **Clear hold**: green banner, the Mon, 30 Nov payout is Scheduled
+6. Optional: **Request information** (solid red banner), reply, **Submit**, banner shows "Details received"
+7. **Clear hold**: green banner, the held payouts go back to Pending
 
 The panel also has: theme (system by default, or force light/dark), simulate upload failure,
 simulate submit failure and **Reset**. State is kept in `localStorage`, so a full page reload
